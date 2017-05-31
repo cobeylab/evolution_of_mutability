@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --job-name=VRC01_01_con_run1c
+#SBATCH --output=VRC01_01_con_run1c.out
+#SBATCH --error=VRC01_01_con_run1c.err
+#SBATCH --time=500:00:00
+#SBATCH --partition=cobey
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+
+module load beast/1.8
+
+cd ../../../../results/BEAST/observed_lineages/VRC01_01_constant/VRC01_01_con_run1c/
+
+beast ../../../../../analyses/BEAST/observed_lineages/VRC01_01_constant/VRC01_01_con_run1.xml
