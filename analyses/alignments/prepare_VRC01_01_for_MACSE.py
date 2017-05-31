@@ -8,10 +8,10 @@ import csv
 
 
 def main(argv):
-    #local directory:
-    data_directory = "../../results/0_Clone_assignment/VRC01/"
     
-    raw_file_name = data_directory + "VRC01_01.fa"
+    data_directory = "../../results/clonal_assignment/VRC01/"
+    
+    raw_file_name = data_directory + "VRC01_1.fasta"
     raw_file = open(raw_file_name, 'r')
 
     processed_file_path = '../../results/alignments/VRC01_01_plus_GERMLINE.fasta'

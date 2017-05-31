@@ -8,13 +8,10 @@ import csv
 
 
 def main(argv):
-    # Path to mounted midway on Linux:
-    # data_directory = "/run/user/1000/gvfs/smb-share:server=midwaysmb.rcc.uchicago.edu,share=project/cobey/mvieira/Ig_evolvability/Data/Wu_2015_VRC01/"
-
-    #local directory:
-    data_directory = "../../results/0_Clone_assignment/VRC01/"
     
-    raw_file_name = data_directory + "VRC01_13.fa"
+    data_directory = "../../results/clonal_assignment/VRC01/"
+    
+    raw_file_name = data_directory + "VRC01_13.fasta"
     raw_file = open(raw_file_name, 'r')
 
     processed_file_path = '../../results/alignments/VRC01_13_plus_GERMLINE.fasta'

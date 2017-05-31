@@ -14,7 +14,7 @@ We used MACSE to align observed sequences along with a "germline" sequence consi
 
 2 - Manually edit nucleotide alignments in SeaView and save in nexus format as <CLONE>\_MACSE\_NT\_EDITED.nex. For heavy-chain alignments, make sure there are no gaps within the V and within the J portion of the GERMLINE sequence (the ones that are concatenated to produce the alignment). There should be a large gap between them (corresponding to the D gene from the full VDJ sequences from the clones). We removed mostly-gap regions at the edges of the alignment.
 
-3 - Run add\_dates.sh to execute python scripts that will add sequence sampling times from the original fasta files to the edited alignment files and output the final alignment files (<CLONE>\_final\_alignment.nex>)
+3 - Run add\_dates\_<CLONE>.py scripts to execute python scripts that will add sequence sampling times from the original fasta files to the edited alignment files and output the final alignment files (<CLONE>\_final\_alignment.nex>)
 
 ##Deleted sequences##
 
