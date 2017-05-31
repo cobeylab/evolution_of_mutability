@@ -4,7 +4,6 @@ presentations/*
 figures/*
 *.trees
 results/BEAST/*
-results/contrasts/*
 results/rate_correlations/*
 results/mutability_correlations/*
 results/simulations/*
