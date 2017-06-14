@@ -53,7 +53,7 @@ do
             
             # Summarize logs
             ../../../../../../beast1/bin/loganalyser -burnin $burnin temp_log.log log_summary.csv
-            ../../../../../../beast1/bin/loganalyser -burnin $burnin temp_dNdS.log dNdS_summary.csv
+            #../../../../../../beast1/bin/loganalyser -burnin $burnin temp_dNdS.log dNdS_summary.csv
 
             # Find sampling interval (in # states) required to get 1000 trees from post-burn-in
             sampling_interval=$(($post_burnin / 1000))

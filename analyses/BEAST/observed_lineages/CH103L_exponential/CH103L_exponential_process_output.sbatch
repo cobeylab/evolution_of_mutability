@@ -6,8 +6,8 @@
 #SBATCH --partition=cobey
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem-per-cpu=4000
+#SBATCH --mem-per-cpu=16000
 
 module load java
-cd /project/cobey/mvieira/evolvability/analyses/BEAST/observed_lineages
+cd /project/cobey/mvieira/evolution_of_mutability/analyses/BEAST/observed_lineages
 ./process_output.sh CH103L exponential
