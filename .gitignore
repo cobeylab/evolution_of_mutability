@@ -6,11 +6,8 @@ figures/*
 results/BEAST/*
 results/rate_correlations/*
 results/mutability_correlations/*
-results/simulations/*
-results/simulations_MCC/*
 results/tree_annotation/*
 results/hyphy/*
-results/relative_mutability/*
 *.out
 *.err
 *.pdf

@@ -7,43 +7,14 @@ import re
 from dendropy import Tree
 from numpy import random
 
-# Import mutability functions from analyses/mutability folder
+# Import mutability functions and partition points from analyses/mutability folder
 sys.path.insert(0, '../mutability/')
-# Import partition_points dictionary from rate_correlations folder
-sys.path.insert(0, '../rate_correlations/')
-# Import genetic code from simulations folder:
-sys.path.insert(0, '../simulations/modules/')
-from gen_code_DNA import genetic_code
-
-
 from mutability_function import seq_mutability, aggregated_mutability
 from partition_points import partition_points_dic
 
-#Dictionary of codon frequencies per amino acid:
-codon_freqs = {}
-
-# Read table of human codon frequencies (see reference in CSV file):
-with open('../relative_mutability/human_codon_frequencies.csv','r') as codon_freq_file:
-    for line in codon_freq_file:
-        # Skip first 3 lines
-        if line.find('#') == -1:
-            aa = line.split(' ')[1]
-            codon = line.split(' ')[0]
-            frequency = line.split(' ')[2]
-
-            if aa not in codon_freqs.keys():
-                codon_freqs[aa] = {codon:frequency}
-            else:
-                codon_freqs[aa][codon] = frequency
-
-    # Normalize so that freqs for each aa sum to 1 (some do not probably because of rounding error in the authors' report)
-    for aa in codon_freqs.keys():
-        prob_sum = 0
-        for codon in codon_freqs[aa].keys():
-            prob_sum = prob_sum + float(codon_freqs[aa][codon])
-
-        for codon in codon_freqs[aa].keys():
-            codon_freqs[aa][codon] = float(codon_freqs[aa][codon])/prob_sum
+# Import function for partitioning S5F changes into syn. and non-syn. components:
+sys.path.insert(0, '../S_NS_mutability_changes/')
+from mutation_functions import sequence_differences
 
 
 def main(argv):
@@ -151,16 +122,20 @@ def main(argv):
 
         # Write header to mutability contrasts output file:
         mutability_output_header = 'tree,parent,child,branch_is_terminal,branch_in_trunk,n_descendants_last_time'
-        mutability_output_header += ',n_codons_randomizable'
         for region in ['WS', 'FR', 'CDR']:
             for metric in ['S5F','7M','HS','CS','OHS']:
                 mutability_output_header += ',' + metric + '_' + region + '_contrast'
-                mutability_output_header += ',' + metric + '_' + region + '_contrast_rdm'
 
         for region in ['WS', 'FR', 'CDR']:
             for metric in ['S5F','7M','HS','CS','OHS']:
                 mutability_output_header += ',' + metric + '_' + region + '_parent'
-        mutability_output_header += ',parent_distance,parent_distance_RC,parent_time\n'
+
+        # For S5F only, changes partitioned into syn. and non-syn.
+        mutability_output_header += ',S5F_WS_contrast_syn,S5F_WS_contrast_nonsyn,'
+        mutability_output_header += 'S5F_FR_contrast_syn,S5F_FR_contrast_nonsyn,'
+        mutability_output_header += 'S5F_CDR_contrast_syn,S5F_CDR_contrast_nonsyn,'
+
+        mutability_output_header += 'parent_distance,parent_distance_RC,parent_time\n'
 
         mutability_output_file.write(mutability_output_header)
 
@@ -364,67 +339,6 @@ def main(argv):
                                     branch_in_trunk = 0
 
 
-                            # RANDOMIZE DESCENDANT KEEPING AA SEQUENCE CONSTANT
-                            randomized_sequence = ''
-                            randomizable_sites = []
-                            for i in range(len(node_sequence)/3):
-                                parent_codon = parent_node_sequence[i * 3:(i * 3 + 1) + 2]
-                                node_codon = node_sequence[i * 3:(i * 3 + 1) + 2]
-
-                                #If both are proper codons (i.e. no non-ACGT) symbols, compare
-                                if set(node_codon) <= {'A', 'G', 'C', 'T'} and set(parent_codon) <= {'A', 'G', 'C', 'T'}:
-
-                                    # Count number of nucleotide differences:
-                                    nt_differences = [j for j in range(3) if parent_codon[j] != node_codon[j]]
-                                    nt_differences = len(nt_differences)
-
-
-                                    # If there's at least one nt difference:
-                                    if nt_differences > 0:
-                                        # Find set of possible codons based on descendant aa
-                                        descendant_aa = genetic_code[node_codon]
-
-                                        # codons that code for the same descendent aa and have the same n of nt diffs
-                                        possible_codons = [codon for codon in genetic_code.keys() if
-                                                           genetic_code[codon] == descendant_aa and
-                                                           len([k for k in range(3) if codon[k] != parent_codon[k]]) == nt_differences]
-
-                                        if len(possible_codons) > 1:
-                                            randomizable_sites.append(i)
-
-                                        # Sample possible codons according to their relative freq in descendant aa
-                                        codon_sampling_probs = []
-                                        for codon in possible_codons:
-                                            sampling_prob = codon_freqs[descendant_aa][codon]
-                                            codon_sampling_probs.append(sampling_prob)
-
-                                        # Normalize codon_sampling_probs so sum is 1
-                                        codon_sampling_probs = [prob/sum(codon_sampling_probs) for
-                                                                prob in codon_sampling_probs]
-
-                                        randomized_codon = random.choice(possible_codons, p=codon_sampling_probs)
-                                        assert (genetic_code[randomized_codon] == genetic_code[
-                                            node_codon]), 'Randomized sequence has a different amino acid sequence'
-                                    else:
-                                        # if parent and descendant codons are the same, repeat codon
-                                        randomized_codon = node_codon
-
-                                else:
-                                    #If any of the two codons contains non-AGCT symbols, repeat descendant codon
-                                    randomized_codon = node_codon
-
-
-                                randomized_sequence += randomized_codon
-
-                                # Number of sites that was possible to randomize:
-                                # (i.e. there were sequence differences, and any NS changes had more than one way to go
-                            n_codons_randomizable = len(randomizable_sites)
-
-                            # Compute mutability of randomized descendant
-                            rdm_node_mutability_WS = seq_mutability(randomized_sequence)
-                            rdm_node_mutability_aggregated = aggregated_mutability(randomized_sequence, partition_points)
-
-
                             # --------------------------- Write wew line of mutability output file -------------------------
                             # Adding results to output line in the order specified in mutability_output_header
 
@@ -432,7 +346,6 @@ def main(argv):
 
                             mutability_line += str(node.is_leaf() * 1) + ',' + str(branch_in_trunk) + ','
                             mutability_line += str(n_descendants_last_time) + ','
-                            mutability_line += str(n_codons_randomizable) + ','
 
                             # The following loops MUST BE in this exact order
 
@@ -440,22 +353,16 @@ def main(argv):
                             for metric in ['mean_S5F','mean_7M','HS','CS','OHS']:
                                 node_mutability = node_mutability_WS[1][metric]
                                 parent_mutability = parent_node_mutability_WS[1][metric]
-                                randomized_mutability = rdm_node_mutability_WS[1][metric]
-
                                 contrast = node_mutability - parent_mutability
-                                contrast_randomized = randomized_mutability - parent_mutability
-                                mutability_line += str(contrast) + ',' + str(contrast_randomized) + ','
+                                mutability_line += str(contrast) + ','
 
                             # Add FR and CDR aggregated mutability contrasts:
                             for region in ['FR','CDR']:
                                 for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
                                     node_mutability = node_mutability_aggregated[region + '_mutability'][metric]
                                     parent_mutability = parent_node_mutability_aggregated[region + '_mutability'][metric]
-                                    randomized_mutability = rdm_node_mutability_aggregated[region + '_mutability'][metric]
-
                                     contrast = node_mutability - parent_mutability
-                                    contrast_randomized = randomized_mutability - parent_mutability
-                                    mutability_line += str(contrast) + ',' + str(contrast_randomized) + ','
+                                    mutability_line += str(contrast) + ','
 
                             # Add parent whole-sequence mutability
                             for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
@@ -468,8 +375,30 @@ def main(argv):
                                     parent_mutability = parent_node_mutability_aggregated[region + '_mutability'][metric]
                                     mutability_line += str(parent_mutability) + ','
 
+
+                            # For S5F only, add changes partitioned into syn. and non-syn. changes
+                            S5F_contrast_WS_syn = sequence_differences(parent_node_sequence,node_sequence,
+                                                                       partition_points)['mutability_change_syn']
+                            S5F_contrast_WS_nonsyn = sequence_differences(parent_node_sequence,node_sequence,
+                                                                          partition_points)['mutability_change_nonsyn']
+
+                            S5F_contrast_FR_syn = sequence_differences(parent_node_sequence, node_sequence,
+                                                                       partition_points)['mutability_change_syn_FR']
+                            S5F_contrast_FR_nonsyn = sequence_differences(parent_node_sequence, node_sequence,
+                                                                       partition_points)['mutability_change_nonsyn_FR']
+
+                            S5F_contrast_CDR_syn = sequence_differences(parent_node_sequence, node_sequence,
+                                                                       partition_points)['mutability_change_syn_CDR']
+                            S5F_contrast_CDR_nonsyn = sequence_differences(parent_node_sequence, node_sequence,
+                                                                      partition_points)['mutability_change_nonsyn_CDR']
+
+                            mutability_line += str(S5F_contrast_WS_syn) + ',' + str(S5F_contrast_WS_nonsyn) + ','
+                            mutability_line += str(S5F_contrast_FR_syn) + ',' + str(S5F_contrast_FR_nonsyn) + ','
+                            mutability_line += str(S5F_contrast_CDR_syn) + ',' + str(S5F_contrast_CDR_nonsyn) + ','
+
                             mutability_line += ','.join([str(parent_to_root_distance), str(parent_to_root_distance_RC),
-                                                               str(parent_time)])
+                                                         str(parent_time)])
+
                             mutability_line += '\n'
 
                             #print 'Mutability: ' + parent_node_number + ' ' + node_number #+ ':::::' + mutability_line
