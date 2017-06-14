@@ -6,7 +6,6 @@ figures/*
 results/BEAST/*
 results/rate_correlations/*
 results/mutability_correlations/*
-results/tree_annotation/*
 results/hyphy/*
 *.out
 *.err
