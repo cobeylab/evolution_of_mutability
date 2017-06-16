@@ -257,6 +257,7 @@ def main(argv):
 
 
         # ================================== DO THE ANALYSIS FOR EACH NODE =============================================
+        print 'Randomizing sequences...'
         for node in tree.nodes():
 
             if node.is_leaf() and number_to_id[str(node.taxon).replace("'", '')] == 'KJ134124_119':

@@ -91,7 +91,44 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
     # Find number of nucleotide differences between parent and descendant
     diff_nts = [nt for nt in range(seq_length) if parent_sequence[nt] != descendant_sequence[nt]]
+    diff_nts_FRs = [nt for nt in diff_nts if nt in FR_sites]
+    diff_nts_CDRs = [nt for nt in diff_nts if nt in CDR_sites]
+    
+    
     n_nt_diffs = len(diff_nts)
+    n_nt_diffs_FRs = len(diff_nts_FRs)
+    n_nt_diffs_CDRs = len(diff_nts_CDRs)
+
+    # Find number of AA differences in FRs and CDRs:
+    n_aa_diffs_FRs = 0
+    n_aa_diffs_CDRs = 0
+    
+    for nt in diff_nts_FRs:
+        codon_site = nt/3
+        parent_codon = parent_sequence[codon_site*3 : codon_site*3 + 3]
+        descendant_codon = descendant_sequence[codon_site*3 : codon_site*3 + 3]
+        
+        if set(parent_codon) <= {'A', 'G', 'C', 'T'} and set(descendant_codon) <= {'A', 'G', 'C', 'T'}:       
+            if genetic_code[parent_codon] != genetic_code[descendant_codon]:
+                n_aa_diffs_FRs += 1
+
+    for nt in diff_nts_CDRs:
+        codon_site = nt/3
+        parent_codon = parent_sequence[codon_site*3 : codon_site*3 + 3]
+        descendant_codon = descendant_sequence[codon_site*3 : codon_site*3 + 3]
+        
+        if set(parent_codon) <= {'A', 'G', 'C', 'T'} and set(descendant_codon) <= {'A', 'G', 'C', 'T'}:       
+            if genetic_code[parent_codon] != genetic_code[descendant_codon]:
+                n_aa_diffs_CDRs += 1    
+                
+    # % Divergence in FRs and CDRs:
+    nt_divergence_FRs = float(n_nt_diffs_FRs) / len(FR_sites)
+    nt_divergence_CDRs = float(n_nt_diffs_CDRs) / len(CDR_sites)
+    
+    aa_divergence_FRs = float(n_aa_diffs_FRs) / (len(FR_sites)/3)
+    aa_divergence_CDRs = float(n_aa_diffs_CDRs) / (len(CDR_sites)/3)
+
+
 
     # Total number (in codon sites) of synonymous and non-synonymous differences
     n_syn_diffs = 0
@@ -300,6 +337,10 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     output_dictionary['mutability_change_syn_CDR'] = mutability_change_syn_CDR
     output_dictionary['mutability_change_nonsyn_CDR'] = mutability_change_nonsyn_CDR
     output_dictionary['motifs_with_syn_nonsyn'] = motifs_with_syn_nonsyn
+    output_dictionary['nt_divergence_FRs'] = nt_divergence_FRs
+    output_dictionary['nt_divergence_CDRs'] = nt_divergence_CDRs
+    output_dictionary['aa_divergence_FRs'] = aa_divergence_FRs
+    output_dictionary['aa_divergence_CDRs'] = aa_divergence_CDRs
 
     # Generate sequence with only syn. differences:
     syn_only_descendant = deepcopy(parent_sequence)
@@ -532,7 +573,3 @@ def randomize_sequence(parent_sequence, descendant_sequence, mutability_model, t
 
     return [randomized_sequence, n_nonsyn_randomizable, randomizable_nonsyn_sites]
 
-
-# testing...
-#sequence_differences(parent_sequence,descendant_sequence)
-#sequence_differences(parent_sequence,randomize_sequence(parent_sequence,descendant_sequence,'S5F','S5F'))

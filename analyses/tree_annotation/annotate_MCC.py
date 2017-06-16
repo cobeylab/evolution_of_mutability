@@ -62,7 +62,7 @@ def main(argv):
         chain_directory = '../../results/BEAST/observed_lineages/' + clone + '_' + prior + '/' + chain_id + '/'
         MCC_file_path = chain_directory + chain_id + '_MCC_tree.tree'
 
-        output_directory = '../../results/tree_annotation/observed_lineages/' + clone + '_' + prior + '/'
+        output_directory = '../../results/tree_annotation/'
         output_file_path = output_directory + chain_id + '_annotated_MCC.tree'
 
 
@@ -75,7 +75,7 @@ def main(argv):
         MCC_file_path = '../../results/BEAST/simulated_alignments/' + chain_id + '/'
         MCC_file_path += chain_id + '_MCC_tree.tree'
 
-        output_directory = '../../results/tree_annotation/simulated_alignments/' + chain_id + '/'
+        output_directory = '../../results/tree_annotation/'
         output_file_path = output_directory + chain_id + '_annotated_MCC.tree'
 
         xml_file_path = '../../analyses/BEAST/simulated_alignments/' + chain_id + '/' + chain_id + '.xml'

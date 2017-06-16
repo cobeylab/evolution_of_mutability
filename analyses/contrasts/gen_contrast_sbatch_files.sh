@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Sbatch files for observed lineages
-for clone in {CH103,CH103int,CH103L,VRC26,VRC26int,VRC26L,VRC26Lint,VRC01_01,VRC01_19,VRC01_13,VRC01_H0306,VRC01_H0306int,VRC01_L0306,VRC01_H08,VRC01_L08}
+for clone in {CH103,CH103L,VRC26,VRC26int,VRC26L,VRC26Lint,VRC01_01,VRC01_19,VRC01_13}
 do
    for prior in {constant,exponential,logistic}
    do

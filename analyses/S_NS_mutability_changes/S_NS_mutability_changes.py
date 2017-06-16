@@ -73,7 +73,7 @@ def main(argv):
         xml_file_path = '../../analyses/BEAST/observed_lineages/' + clone + '_' + prior + '/'
         xml_file_path += chain_id[0:len(chain_id) - 1] + '.xml'
 
-        output_directory = '../../results/simulations_MCC/observed_lineages/' + clone + '_' + prior + '/'
+        output_directory = '../../results/S_NS_mutability_changes/observed_lineages/' + clone + '_' + prior + '/'
 
         output_file_path_observed = output_directory + chain_id + '_observed_MCC.csv'
         output_file_path_simulated = output_directory + chain_id + '_simulated_MCC.csv'
@@ -89,7 +89,7 @@ def main(argv):
 
         xml_file_path = '../../analyses/BEAST/simulated_alignments/' + chain_id + '/' + chain_id + '.xml'
 
-        output_directory = '../../results/simulations_MCC/simulated_alignments/' + chain_id + '/'
+        output_directory = '../../results/S_NS_mutability_changes/simulated_alignments/' + chain_id + '/'
         output_file_path_observed = output_directory + chain_id + '_observed_MCC.csv'
         output_file_path_simulated = output_directory + chain_id + '_simulated_MCC.csv'
         output_file_path_motifs = output_directory + chain_id + '_motif_changes_MCC.csv'
@@ -681,20 +681,6 @@ def main(argv):
                         new_line_sim += '\n'
 
                         output_file_sim.write(new_line_sim)
-
-    # =============================== WRITE RESULTS ON NUMBER OF CHANGES FOR EACH MOTIF ================================
-    # with open(output_file_path_motifs, 'w') as output_file_motifs:
-    #     output_file_motifs.write('motif,S5F_mutability, n_syn_changes,n_nonsyn_changes,total_n_changes\n')
-    #
-    #     for key in motif_changes.keys():
-    #         n_syn_changes = motif_changes[key]['syn']
-    #         n_nonsyn_changes = motif_changes[key]['nonsyn']
-    #         total_n_changes = n_syn_changes + n_nonsyn_changes
-    #
-    #         new_line = str(key) + ',' + str(S5F[key]) + ','
-    #         new_line += str(n_syn_changes) + ',' + str(n_nonsyn_changes) + ',' + str(total_n_changes) + '\n'
-    #
-    #         output_file_motifs.write(new_line)
 
 
 

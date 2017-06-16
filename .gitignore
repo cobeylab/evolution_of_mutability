@@ -1,12 +1,8 @@
 *.tmp
 *~
-presentations/*
 figures/*
 *.trees
 results/BEAST/*
-results/rate_correlations/*
-results/mutability_correlations/*
-results/hyphy/*
 *.out
 *.err
 *.pdf
