@@ -4,7 +4,7 @@ We used [MACSE](http://bioweb.supagro.inra.fr/macse/) to align observed sequence
 
 We refer to each of the seven heavy and light chain datasets as a "clone": CH103, CH103L, VRC26, VRC26L, VRC01-13, VRC01-01, VRC01-19. The "L" in CH103L and VRC26L indicates that those clones are the light chains of lineages CH103 and VRC26.
 
-The steps used to process and original fasta files (and fasta files obtained after partitioning the VRC01 datasets) are detailed below. However, the final alignment files are provided in the ```results``` directory of this repository as ```<CLONE>_final_alignment.nex```. 
+The steps used to process and align original fasta files (and fasta files obtained after partitioning the VRC01 datasets) are detailed below. However, the final alignment files are provided in the ```results``` directory of this repository as ```<CLONE>_final_alignment.nex```. 
 
 ### Steps ###
 0 - If the user has the ```MACSE.jar``` file in his home folder (in a Unix system), executing ```MACSE_alignment.sh``` will execute steps 1-2 for all datasets.
