@@ -7,7 +7,7 @@ We refer to each of the seven heavy and light chain datasets as a "clone": CH103
 The steps used to process and align original fasta files (and fasta files obtained after partitioning the VRC01 datasets) are detailed below. However, the final alignment files are provided in the ```results``` directory of this repository as ```<CLONE>_final_alignment.nex```. 
 
 ### Steps ###
-0 - If the user has the ```MACSE.jar``` file in his home folder (in a Unix system), executing ```MACSE_alignment.sh``` will execute steps 1-2 for all datasets.
+0 - If the user has the ```MACSE.jar``` file in his or her home folder (in a Unix system), executing ```MACSE_alignment.sh``` will execute steps 1-2 for all datasets.
 
 1 -  In the ```analyses/alignments/``` directory, execute the python scripts ```prepare_<CLONE>_for_MACSE.py``` to add a concatenated germline sequence to the fasta files with the observed sequences (```<CLONE>_plus_GERMLINE.fasta```). 
 
@@ -25,14 +25,6 @@ During the manual edition step, we deleted the following sequences:
 
 **Alignment of VRC26 light chain**: removed sequences that contained frameshifts in the MACSE alignment; those sequences are probably incomplete reads with a few "extra" or missing nucleotides at the beginning of the sequence. We removed the following sequences (9 out of 472 sequences, approx. 2%) from the MACSE alignment and did not the remaining sequences again (identified by their GenBank accession numbers):
 
-KJ134566
-KJ134527
-KJ134602
-KJ134521
-KJ134482
-KJ134504
-KJ134594
-KJ134846
-KJ134750
+KJ134566, KJ134527 ,KJ134602, KJ134521, KJ134482, KJ134504, KJ134594, KJ134846, KJ134750
 
 **Alignment of VRC01-19** - removed one sequence with frameshift indels in MACSE alignment (KP841240).
