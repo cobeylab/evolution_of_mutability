@@ -1,6 +1,6 @@
 ## Alignments ##
 
-We used MACSE to align observed sequences along with a "germline" sequence consisting of the concatenated V and J genes. For the light chains, we used only V genes (V + J seems to include frameshifts from the germline sometimes).
+We used [MACSE](http://bioweb.supagro.inra.fr/macse/) to align observed sequences along with a "germline" sequence consisting of the concatenated V and J genes. For the light chains, we used only V genes (V + J seems to include frameshifts from the germline sometimes).
 
 We refer to each of the seven heavy and light chain datasets as a "clone": CH103, CH103L, VRC26, VRC26L, VRC01-13, VRC01-01, VRC01-19. The "L" in CH103L and VRC26L indicates that those clones are the light chains of lineages CH103 and VRC26.
 
