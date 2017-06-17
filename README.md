@@ -1,1 +1,23 @@
-# evolution_of_mutability
+# Evolution of mutability
+This is the repository for *Mutability loss is intrinsic to the evolution of long-lived B cell lineages* (Vieira et al. *in prep*). This document outlines the overall pipeline of the project. Detailed instructions for replicating each analysis can be found in the README files in the corresponding directories in the ```Analyses``` folder.
+
+The project's analyses are divided into two main stages. The first stage is to align B cell receptor sequences and fit phylogenetic models to the resulting alignments using BEAST (v.1.8.2). Before they can be aligned, heavy chain sequences from the VRC01 dataset must be partitioned into clones using PARTIS.
+
+The second stage is to do a series of analyses on the phylogenetic trees inferred by BEAST:
+
+**Relative mutability**: comparison between the observed mutability of B cell receptor sequences and their expected mutability under codon randomization.
+
+**Mutability vs. time**: changes over time in the average mutability of nodes in the B cell trees.
+
+**Contrasts**: quantification of the magnitude, frequency and distribution of mutability changes across branches of the B cell trees.
+
+**Selection**: testing for positive and purifying selection on B cell receptor sequences using BASELINe.
+
+**Divergence from ancestors**: measuring amino acid divergence between B cell receptor sequences and their unmutated ancestors.
+
+**Synonymous / Non-Synonymous mutability changes**: quantifying mutability changes caused by synonymous and non-synonymous substitutions separately.
+
+
+
+
+In addition to the scripts for conducting alignments, sequence partitioning and the BEAST analysis, this repository contains the resulting alignments (and fasta files with partitioned VRC01 clones), but not the results from the BEAST analyses.
