@@ -4,9 +4,17 @@ We used [BEAST (v.1.8.2)](http://beast.bio.ed.ac.uk/) to fit Bayesian phylogenet
 
 The analysis of each clone involves producing an XML file with data and model specification and passing it to BEAST. We used three different population dynamic models to compute prior tree probabilities: constant population size, logistic growth, and exponential growth. Those priors are identified in the XML files by their names ("constant", "exponential", "logistic") or abbreviations ("con", "exp", "log"). We ran four replicate MCMC chains under a constant population size prior, and two chains each under the exponential and logistic priors. Each replicate chain is identified by a letter (a-d) (note that a single XML file is used for all replicate chains).
 
-To run a single MCMC chain for the CH103 dataset using a constant population size prior, for example, go to ```results/BEAST/observed_lineages/CH103_constant/CH103_con_run1a``` and run:
+To run a single MCMC chain for the CH103 dataset using a constant population size prior, for example, run:
 
-```beast ../../../../../analyses/BEAST/observed_lineages/CH103_constant/CH103_con_run1.xml```
+```beast CH103_con_run1.xml```
+
+Subsequent analysis assume BEAST results will be in the ```results``` under the following hierarchy:
+
+```evolution_of_mutability/results/BEAST/observed_lineages/<CLONE>_<prior>/<CLONE>_<prior abbreviation>_run1<replicate chain letter>```. 
+
+For example, to have results from chain ```CH103_con_run1a``` in the correct location, go to ```results/BEAST/observed_lineages/CH103_constant/CH103_con_run1a``` and run:
+
+```../../../../../analyses/BEAST/observed_lineages/CH103_constant/CH103_con_run1.xml```
 
 We describe the steps for setting up the XML files below, but also provide the files in the corresponding clone + prior folders in the ```analyses/BEAST``` directory.
 
