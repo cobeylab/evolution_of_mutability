@@ -17,7 +17,7 @@ The steps used to process and align original fasta files (and fasta files obtain
 
 2 - Manually edit nucleotide alignments (```<CLONE>_MACSE_NT.fasta```) and save in nexus format as ```<CLONE>_MACSE_NT_EDITED.nex```. For heavy-chain alignments, make sure there are no gaps within the V and within the J portion of the "GERMLINE" sequence (the ones that are concatenated to produce the alignment). There should be a large gap between them (corresponding to the D gene from the full VDJ sequences from the clones). We removed mostly-gap regions at the edges of the alignment.
 
-3 - ```Run add_dates_<CLONE>.py``` scripts to execute python scripts that will add sequence sampling times from the original fasta files to the edited alignment files and output the final alignment files (```<CLONE>_final_alignment.nex```)
+3 - Run ```add_dates_<CLONE>.py``` scripts to execute python scripts that will add sequence sampling times from the original fasta files to the edited alignment files and output the final alignment files (```<CLONE>_final_alignment.nex```)
 
 ### Deleted sequences ###
 
