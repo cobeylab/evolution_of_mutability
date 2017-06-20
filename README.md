@@ -1,5 +1,5 @@
 # Evolution of mutability
-This is the repository for *Selection and neutral mutations drive pervasive mutability losses in long-lived B cell lineages* (Vieira et al. *in prep*). This document outlines the overall pipeline of the project. Detailed instructions for replicating each analysis can be found in the README files in the corresponding directories in the ```Analyses``` folder.
+This is the repository for *Selection and neutral mutations drive pervasive mutability losses in long-lived B cell lineages* (Vieira et al. in prep). This document outlines the overall pipeline of the project. Detailed instructions for reproducing each analysis can be found in the README files in the corresponding directories in the ```Analyses``` folder.
 
 The project's analyses are divided into two main stages. The first stage is to align B cell receptor sequences and fit phylogenetic models to the resulting alignments using [BEAST (v.1.8.2)](http://http://beast.bio.ed.ac.uk/). Before they can be aligned, heavy chain sequences from the VRC01 dataset must be partitioned and assigned to different clones using [Partis](http://https://github.com/psathyrella/partis).
 
@@ -16,5 +16,7 @@ The second stage is to do a series of analyses on the phylogenetic trees inferre
 **Divergence from ancestors**: measuring amino acid divergence between B cell receptor sequences and their unmutated ancestors.
 
 **Synonymous / Non-Synonymous mutability changes**: quantifying mutability changes caused by synonymous and non-synonymous substitutions separately; comparing observed synonymous changes to simulations under different models.
+
+**Rates vs. time**: changes over time in B cell substitution rates.
 
 In addition to the code for conducting the analyses, this repository contains a mostly empty results directory with the hierarchy required for analysis scripts to access results from other analyses and output their own. Sequence alignment results (and fasta files with the partitioning of VRC01 sequences) are included in the repository.
