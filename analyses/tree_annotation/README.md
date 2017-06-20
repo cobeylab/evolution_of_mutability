@@ -1,16 +1,10 @@
-#Tree annotation#
-Things to note:
+## Tree annotation ##
 
-The BEAST MCC trees sometimes have ambiguous sequence reconstructions at some nodes. Each node is annotated with the set of reconstructions found in the trees used to obtain the MCC tree, along with the posterior probability of each reconstruction (presumably as determined by its frequency in the sample). When the highest posterior probability corresponds to more than one reconstruction, the reconstruction at the node is represented in the form 
+```annotate_MCC.py``` takes the NEXUS file containing the maximum-clade-credibility (MCC) tree from an MCMC chain and outputs a NEXUS file with nodes annotated with mutability metrics based on their sequences.
 
-'VRC01\_01_\final\_alignment.CP2="ATATTACGCATAACGCCT[...]+ATATTACGCATAACGCCT[...
-]".
+As an example, to annotate the MCC tree of replicate chain "a" of CH103 heavy-chain under a constant growth coalescent prior, run:
 
-In the analysis of MCC trees, I arbitrarily chose the first possible reconstruction (i.e. before the first '+') in all such instances.
+```python annotate_MCC.py CH103_con_run1a```
 
-As for the other analyses involving mutability, we ignored a weird VRC26 sequence whose CDR 2 consisted entirely of gaps (genBank accession KJ134124).
-
-##Overview##
-
-##Pipeline##
+The script will analyze the MCC tree in the file ```CH103_con_run1a_MCC_tree.tree``` (in the corresponding BEAST results folder) and output the annotated NEXUS file, ```CH103_con_run1a_annotated_MCC.tree```, to the ```results/tree_annotation``` directory.
 
