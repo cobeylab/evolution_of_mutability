@@ -2,7 +2,7 @@
 """
 import sys
 # Import partition_points dictionary from mutability folder
-sys.path.insert(0, '../rate_correlations/')
+sys.path.insert(0, '../mutability/')
 
 # Import gen. code and function for identifying sequence differences from syn./non-syn analysis:
 sys.path.insert(0, '../S_NS_mutability_changes/')
