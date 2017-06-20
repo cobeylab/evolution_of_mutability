@@ -8,13 +8,15 @@ To run a single MCMC chain for the CH103 dataset using a constant population siz
 
 ```beast CH103_con_run1.xml```
 
+The analysis will output a ```.trees``` file with the complete sample of trees from the posterior distribution and a ```.log``` with parameter values throughout the MCMC chain.
+
 Subsequent analysis assume BEAST results will be in the ```results``` under the following hierarchy:
 
 ```evolution_of_mutability/results/BEAST/observed_lineages/<CLONE>_<prior>/<CLONE>_<prior abbreviation>_run1<replicate chain letter>```. 
 
 For example, to have results from chain ```CH103_con_run1a``` in the correct location, go to ```results/BEAST/observed_lineages/CH103_constant/CH103_con_run1a``` and run:
 
-```../../../../../analyses/BEAST/observed_lineages/CH103_constant/CH103_con_run1.xml```
+```beast ../../../../../analyses/BEAST/observed_lineages/CH103_constant/CH103_con_run1.xml```
 
 We describe the steps for setting up the XML files below, but also provide the files in the corresponding clone + prior folders in the ```analyses/BEAST``` directory.
 
