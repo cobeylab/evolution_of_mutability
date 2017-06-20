@@ -10,7 +10,7 @@ library('lattice')
 library('gridBase')
 options(expressions=10000)
 
-results_directory <- '../../results/simulations_MCC/observed_lineages/'
+results_directory <- '../../results/S_NS_mutability_chanegs/observed_lineages/'
 
 # ======= GET DATAFRAMES WITH OBSERVED MCC MUTABILITY RESULTS FOR ALL LINEAGES
 CH103_dataframe_obs <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_observed_MCC.csv', sep = ''), header = T, sep = ',')
@@ -27,13 +27,13 @@ dataframe_list_obs <- list('CH103' = CH103_dataframe_obs, 'CH103L' = CH103L_data
                            'VRC01_19' = VRC01_19_dataframe_obs)                        
 
 # ======= GET DATAFRAMES WITH SIMULATION RESULTS FOR ALL LINEAGES
-CH103_dataframe_sim <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_simulations_MCC.csv', sep = ''), header = T, sep = ',')
-CH103L_dataframe_sim <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_simulations_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26int_dataframe_sim <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_simulations_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26L_dataframe_sim <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_simulations_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_01_dataframe_sim <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_simulations_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_13_dataframe_sim <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_simulations_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_19_dataframe_sim <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_simulations_MCC.csv', sep = ''), header = T, sep = ',')
+CH103_dataframe_sim <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_S_NS_mutability_chanegs.csv', sep = ''), header = T, sep = ',')
+CH103L_dataframe_sim <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_S_NS_mutability_chanegs.csv', sep = ''), header = T, sep = ',')
+VRC26int_dataframe_sim <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_S_NS_mutability_chanegs.csv', sep = ''), header = T, sep = ',')
+VRC26L_dataframe_sim <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_S_NS_mutability_chanegs.csv', sep = ''), header = T, sep = ',')
+VRC01_01_dataframe_sim <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_S_NS_mutability_chanegs.csv', sep = ''), header = T, sep = ',')
+VRC01_13_dataframe_sim <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_S_NS_mutability_chanegs.csv', sep = ''), header = T, sep = ',')
+VRC01_19_dataframe_sim <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_S_NS_mutability_chanegs.csv', sep = ''), header = T, sep = ',')
 
 dataframe_sim_list <- list('CH103' = CH103_dataframe_sim, 'CH103L' = CH103L_dataframe_sim,
                        'VRC26' = VRC26int_dataframe_sim, 'VRC26L' = VRC26L_dataframe_sim,
@@ -188,7 +188,7 @@ ttest_dataframe <- data.frame(lineage, metric = metric_vector, region = region_v
 
 names(ttest_dataframe)[names(ttest_dataframe) == 'type'] <- 'model'
 
-write.table(ttest_dataframe, '../../results/simulations_MCC/simulation_MCC_summary.csv', 
+write.table(ttest_dataframe, '../../results/S_NS_mutability_chanegs/simulation_MCC_summary.csv', 
             sep = ',', row.names = F)
 
 # ===== DATAFRAME WITH CUMULATIVE CHANGES BY REGION AND SUBSTITUTION TYPE (SYN. / NON-SYN.) =======
@@ -246,7 +246,7 @@ for(clone in lineage_vector){
 }
 
 selection_dataframe <- data.frame(lineage = lineage_vector, CDR_change_total, CDR_change_nonsyn, CDR_change_syn)
-write.table(selection_dataframe, '../../results/simulations_MCC/CDR_changes_summary.csv', 
+write.table(selection_dataframe, '../../results/S_NS_mutability_chanegs/CDR_changes_summary.csv', 
             sep = ',', row.names = F)
 
 
