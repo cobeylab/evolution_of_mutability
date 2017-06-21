@@ -2,3 +2,5 @@
 *.png
 *.svg
 *.tree
+*.RData
+*.RDataTmp

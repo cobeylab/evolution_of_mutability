@@ -1,16 +1,15 @@
-# Produces figure for the manuscript showing the distribution of the fraction of negative changes in S5F
+# Produces figure for the manuscript showing the distribution of the fraction of negative changes in S5F, for all branches (Fig.2) and separately for different branch positions (Fig 5)
 # Uses the following MCMC chains: CH103_con_run1a, CH103L_con_run1a, VRC26int_con_run1a, VRC26L_con_run1a, VRC01_01_log_run1a, VRC01_13_log_run1a, VRC01_19_log_run1a,
 
 library('ggplot2')
-library('reshape')
-library('gridExtra')
 library('grid')
 library('coda')
-library('lattice')
-library('gridBase')
-options(expressions=10000)
+#library('lattice')
 
-results_directory <- '../../results/contrasts/observed_lineages/'
+source('ggplot_parameters.R')
+
+
+results_directory <- '../results/contrasts/observed_lineages/'
 
 # ======= GET DATAFRAMES WITH FRACTION NEGATIVE LOSSES FROM ALL LINEAGES
 
@@ -57,8 +56,7 @@ dataframe_list <- list('CH103' = CH103_dataframe, 'CH103L' = CH103L_dataframe,
   
 }
 
-
-# ==== MAKE DATAFRAME WITH FRACTION OF NEGATIVE CHANGES FOR EACH TREE, LINEAGE, REGION AND METRIC (FOR VIOLIN PLOTS)
+# ==== MAKE DATAFRAME WITH FRACTION OF NEGATIVE CHANGES FOR EACH TREE, LINEAGE, REGION AND METRIC
 fraction_negative_all <- c()
 fraction_negative_terminal <- c()
 fraction_negative_internal <- c()
@@ -231,7 +229,11 @@ summary_dataframe <- data.frame(lineage,metric=metric_column,region=region_colum
                                 mean_fraction_negative_trunk,HPD_llim_trunk,HPD_ulim_trunk,
                                 mean_fraction_negative_nontrunk,HPD_llim_nontrunk,HPD_ulim_nontrunk)
 
-  # Base Plot
+
+
+
+
+ # Base Plot
   pl <- ggplot(data = global_dataframe, aes(x=lineage,y=fraction_negative)) + 
     scale_y_continuous(expand = c(0,0), limits = c(-0.05,1.05)) + 
     theme_bw() +

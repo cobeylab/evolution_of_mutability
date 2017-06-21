@@ -102,8 +102,8 @@ for(tree in unique(contrasts_dataframe$tree)[1:1000]){
   
 # Plotting...
   
-vp <- viewport(width = 0.38, height = 0.38, x = 0.19,
-               y = unit(9, "lines"), just = c("left",
+vp <- viewport(width = 0.38, height = 0.38, x = 0.185,
+               y = unit(8.5, "lines"), just = c("left",
                                                "bottom"))
   
 pdf('CH103_overview_S5F_contrasts.pdf', width=3.43, height = 3)
