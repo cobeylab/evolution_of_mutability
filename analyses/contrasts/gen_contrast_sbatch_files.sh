@@ -35,7 +35,7 @@ done
 
 # Sbatch files for simulated alignments
 
-for scenario in {1,2a,2b,3,4a,4b,5a,5b,5c,6a,6b,6c,7,8a,8b,8c,8d,8e,9,10a,10b,10c,10d,10e,11a,11b,11c,11d,12a,12b,12c,12d}
+for scenario in {1,2a,2b,2c,2d,2e,3a,3b,3c,3d}
 do
     
     for replicate in {1,2,3,4}
