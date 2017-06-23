@@ -284,7 +284,6 @@ dev.off()
     
     
     # Plot results with trunk vs tips vs non-trunk internal
-    
     pl_trunk_vs_nontrunk <- pl + 
       
       geom_linerange(data=subset(summary_dataframe, region != 'WS'),
