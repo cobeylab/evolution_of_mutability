@@ -12,4 +12,4 @@ mutation_rate_list = ['1*1/4L', '1*1/4L', '0.98*1/4L', '0.96*1/4L', '0.94*1/4L',
 reference_mutation_rate = None
 h = None
 fitness_cost_list = [-0.01, -0.01, -0.01, -0.01, -0.01, -0.01, -0.01]
-output_filepath = '../../results/simulations/scenario2a/scenario2a_rep3.nex'
+output_filepath = '../../results/simulated_alignments/scenario2a/scenario2a_rep3.nex'

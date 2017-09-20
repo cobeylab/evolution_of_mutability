@@ -28,7 +28,6 @@ sys.path.insert(0,'control_files')
 from mutability_function import compute_mean_S5F, count_WRCH, count_DGYW, S5F
 
 # Import BCR class and genetic code from modules folder
-#execfile("modules/classBCR.py")
 import modules.classBCR
 BCR = modules.classBCR.BCR
 
@@ -40,7 +39,7 @@ def main(argv):
     control_file = control_file.replace('.py','')
     control_file = control_file.replace('control_files/','')
     
-    control_file = importlib.import_module('control_files.' + control_file)
+    control_file = importlib.import_module(control_file)
         
         
     #=====IMPORTED PARAMETERS FROM CONTROL FILE (SEE README FOR DESCRIPTIONS)======
@@ -324,9 +323,7 @@ def main(argv):
         child_fitness = []
         
         # Find population size of next generation
-        next_pop_size = int(round(pop_size + pop_size * r * (1 - float(pop_size)/K)))
-        #print "Generation: " + str(generation) + '; Pop = ' + str(pop_size) + '; Next pop = ' + str(next_pop_size)
-        
+        next_pop_size = pop_size + pop_size * r * (1 - float(pop_size)/K)
         
         # Get parameter values for the time interval containing the generation
         # (Adjusting numbers so that values for generation 1 come from index 0, and so on)
@@ -335,10 +332,11 @@ def main(argv):
         if mutability_model == 'uniform':
             mutation_rate = mutation_rate_list[generation - 1]
 
-        # For each new sequence
-        for i in range(next_pop_size):
+        # For each new sequence (rounding pop size to an integer)
+        for i in range(int(round(next_pop_size))):
             # Randomly pick parent based on fitness of parental sequences
-            parent_index = random.choice(range(pop_size),1, p = parent_fitness)[0]
+            # (Sample index from 0 to the nearest integer to the current pop. size)
+            parent_index = random.choice(range(int(round(pop_size))),1, p = parent_fitness)[0]
             parent = parent_sequences[parent_index]
                 
             # Find site-specific rates for parent sequence:
@@ -388,7 +386,7 @@ def main(argv):
         # Normalize fitness
         assert(sum(child_fitness) > 0), "All sequences have fitness zero. Mutation rate is probably too high for the chosen fitness cost of non-syn. mutations"
         
-        child_fitness = [float(child_fitness[k]) / sum(child_fitness) for k in range(next_pop_size)]
+        child_fitness = [float(child_fitness[k]) / sum(child_fitness) for k in range(int(round(next_pop_size)))]
         
         # Set child sequences as parents for next generation
         parent_sequences = copy.copy(child_sequences)

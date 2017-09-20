@@ -12,4 +12,4 @@ mutation_rate_list = None
 reference_mutation_rate = '1*1/4L'
 h = 3
 fitness_cost_list = [-0.01]
-output_filepath = '../../results/simulations/scenario3d/scenario3d_rep3.nex'
+output_filepath = '../../results/simulated_alignments/scenario3d/scenario3d_rep3.nex'

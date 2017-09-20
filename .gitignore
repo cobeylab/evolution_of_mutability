@@ -9,3 +9,4 @@ results/BEAST/*
 *.png
 *.DS_Store
 *._.DS_Storel
+*.pyc
