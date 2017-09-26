@@ -206,6 +206,9 @@ def main(argv):
                 # ...and per robust counting...
                 list_distances_RC = []
 
+                # List of node types (internal or external)
+                list_node_type = []
+
                 # Lists with node mutability in whole sequence...
                 list_S5F_WS, list_7M_WS, list_HS_WS, list_CS_WS, list_OHS_WS = [], [], [], [], []
 
@@ -215,7 +218,7 @@ def main(argv):
                 # ...in CDRs...
                 list_S5F_CDR, list_7M_CDR, list_HS_CDR, list_CS_CDR, list_OHS_CDR = [], [], [], [], []
 
-                # For each node
+                # Get values for each node
                 for node in tree.nodes():
 
                     node_number = node.label
@@ -266,6 +269,8 @@ def main(argv):
                             # Get mutability from tip mutability dictionaries
                             node_mutability_WS = mutability_WS_tips[node_id]
                             node_mutability_aggregated = mutability_aggregated_tips[node_id]
+
+                            list_node_type.append('terminal')
                         else:
                             # If node is not a tip, find its sequence from the tree annotation:
 
@@ -278,6 +283,8 @@ def main(argv):
 
                             node_mutability_WS = seq_mutability(node_sequence)
                             node_mutability_aggregated = aggregated_mutability(node_sequence, partition_points)
+
+                            list_node_type.append('internal')
 
                         # Append values for this node to corresponding lists:
                         list_times.append(node_time)
@@ -330,7 +337,8 @@ def main(argv):
                 lists = {"S5F_WS": list_S5F_WS, "7M_WS": list_7M_WS, "HS_WS": list_HS_WS, "CS_WS": list_CS_WS, "OHS_WS": list_OHS_WS,
                          "S5F_FR": list_S5F_FR, "7M_FR": list_7M_FR, "HS_FR": list_HS_FR, "CS_FR": list_CS_FR, "OHS_FR": list_OHS_FR,
                          "S5F_CDR": list_S5F_CDR, "7M_CDR": list_7M_CDR, "HS_CDR": list_HS_CDR, "CS_CDR": list_CS_CDR, "OHS_CDR": list_OHS_CDR,
-                         "node_time": list_times, "node_distance": list_distances, "node_distance_RC": list_distances_RC
+                         "node_time": list_times, "node_distance": list_distances, "node_distance_RC": list_distances_RC,
+                         "node_type": list_node_type
                         }
 
                 # Output dictionary with statistical results for this tree (values for one line of the final output file)
@@ -346,27 +354,27 @@ def main(argv):
                 # First argument of linregress is x, second is y. Slope, intercept and r are elements 0, 1 and 2 from output list
                 for metric in ['S5F', '7M', 'HS', 'CS', 'OHS']:
                     for region in ['WS','FR','CDR']:
-                        output['slope_' + metric + '_' + region + '_vs_node_time'] = linregress(lists['node_time'], lists[metric + '_' + region])[0]
-                        output['intercept_' + metric + '_' + region + '_vs_node_time'] = linregress(lists['node_time'], lists[metric + '_' + region])[1]
-                        output['r_' + metric + '_' + region + '_vs_node_time'] = linregress(lists['node_time'], lists[metric + '_' + region])[2]
 
-                        # Compute relationship between mutability and molecular clock distance:
-                        output['slope_' + metric + '_' + region + '_vs_node_distance'] = linregress(lists['node_distance'], lists[metric + '_' + region])[0]
-                        output['intercept_' + metric + '_' + region + '_vs_node_distance'] = linregress(lists['node_distance'], lists[metric + '_' + region])[1]
-                        output['r_' + metric + '_' + region + '_vs_node_distance'] = linregress(lists['node_distance'], lists[metric + '_' + region])[2]
-                            
-                        # And robust counting distance
-                        output['slope_' + metric + '_' + region + '_vs_node_distance_RC'] = linregress(lists['node_distance_RC'], lists[metric + '_' + region])[0]
-                        output['intercept_' + metric + '_' + region + '_vs_node_distance_RC'] = linregress(lists['node_distance_RC'], lists[metric + '_' + region])[1]
-                        output['r_' + metric + '_' + region + '_vs_node_distance_RC'] = linregress(lists['node_distance_RC'], lists[metric + '_' + region])[2]
+                        # Relationship for all nodes
+                        predictor = lists['node_time']
+                        predicted = lists[metric + '_' + region]
 
-                # Compute relationship between molecular clock distance and robust counting distance
-                output['slope_node_distance_to_root_RC_vs_node_distance_to_root'] = linregress(lists['node_distance'],
-                                                                                                       lists['node_distance_RC'])[0]
-                output['intercept_node_distance_to_root_RC_vs_node_distance_to_root'] = linregress(lists['node_distance'],
-                                                                                                           lists['node_distance_RC'])[1]
-                output['r_node_distance_to_root_RC_vs_node_distance_to_root'] = linregress(lists['node_distance'],
-                                                                                                   lists['node_distance_RC'])[2]
+                        linear_regression = linregress(x = predictor, y = predicted)
+
+                        output['slope_' + metric + '_' + region + '_vs_node_time'] = linear_regression[0]
+                        output['intercept_' + metric + '_' + region + '_vs_node_time'] = linear_regression[1]
+                        output['r_' + metric + '_' + region + '_vs_node_time'] = linear_regression[2]
+
+                        # Relationship for observed values only
+                        predictor_obs_only = [lists['node_time'][i] for i in range(len(lists['node_type'])) if lists['node_type'][i] == 'terminal']
+                        predicted_obs_only = [lists[metric + '_' + region][i] for i in range(len(lists['node_type'])) if lists['node_type'][i] == 'terminal']
+
+                        linear_regression_obs_only = linregress(x = predictor_obs_only, y = predicted_obs_only)
+
+                        output['slope_' + metric + '_' + region + '_vs_node_time_obs_only'] = linear_regression_obs_only[0]
+                        output['intercept_' + metric + '_' + region + '_vs_node_time_obs_only'] = linear_regression_obs_only[1]
+                        output['r_' + metric + '_' + region + '_vs_node_time_obs_only'] = linear_regression_obs_only[2]
+
                 # Append results for this tree
                 tree_results_list.append(output)
 

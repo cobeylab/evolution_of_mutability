@@ -26,7 +26,7 @@ for(rep in unique(results$replicate_trajectory)){
   
   results_subset <- results[results$replicate_trajectory == rep,]
   
-  base_pl <- base_pl + geom_line(data=results_subset, alpha = 0.3)
+  base_pl <- base_pl + geom_line(data=results_subset, alpha = 0.1)
 }
 
 base_pl <- base_pl + scale_color_manual(name = 'Initial mutability',
