@@ -77,7 +77,7 @@ n_repeats = 30
 nsteps = 5000
 
 # Number of replicate trajectories starting from each sequence
-n_trajectories = 10
+n_trajectories = 100
 
 # Find motifs with the lowest mutability and the highest mutability
 lowest_mutability_index = np.array(S5F.values()).argsort()[0]
@@ -93,7 +93,7 @@ initial_seq_low = lowest_mutability_motif * n_repeats
 initial_seq_high = highest_mutability_motif * n_repeats
 
 # Reference mutation rate
-reference_mutation_rate = float(1) / (4 * len(initial_seq_low))
+reference_mutation_rate = float(1) / (16 * len(initial_seq_low))
 
 # Reference mutability (i.e. mutability for which the mutation rate equals the reference mutation rate)
 # Chosen to be the the mutability of the low-mutability seq
@@ -103,15 +103,15 @@ mean_reference_mutability = compute_mean_S5F(initial_seq_low)
 # adjusting value to take them into account with mutability 0 (in line with the site_specific_rates function)
 mean_reference_mutability = mean_reference_mutability * float(len(initial_seq_low) - 4) / len(initial_seq_low)
 
-#Initialize BCR objects
-sequence_low = BCR(initial_seq_low)
-sequence_high = BCR(initial_seq_high)
-
 
 with open('../../results/equilibrium_mutability/equilibrium_mutability.csv', 'w') as output_file:
     output_file.write('generation,initial_mutability,replicate_trajectory,S5F_mutability\n')
 
     for trajectory in range(n_trajectories):
+
+        # Initialize BCR objects
+        sequence_low = BCR(initial_seq_low)
+        sequence_high = BCR(initial_seq_high)
 
         mutability_low = [compute_mean_S5F(initial_seq_low)]
         mutability_high = [compute_mean_S5F(initial_seq_high)]
