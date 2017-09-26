@@ -368,7 +368,10 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
 # ================== SIMULATE DESCENDANT SEQUENCE KEEPING TRUE AA. DESCENDANT SEQ ====================
 
-def randomize_sequence(parent_sequence, descendant_sequence, mutability_model, transition_model, partition_points):
+def randomize_sequence_constrained(parent_sequence, descendant_sequence, mutability_model, transition_model, partition_points):
+    '''Function for generating random descendant sequence while constraining the amino acid sequence to be the same as the observed descendant
+        Also returns sequences with only syn. and only non-syn. differences, and a list of what 5-nucleotide motifs mutated
+    '''
 
     # Initialize randomized sequence:
     randomized_sequence = deepcopy(parent_sequence)
@@ -573,3 +576,95 @@ def randomize_sequence(parent_sequence, descendant_sequence, mutability_model, t
 
     return [randomized_sequence, n_nonsyn_randomizable, randomizable_nonsyn_sites]
 
+def randomize_sequence_unconstrained(parent_sequence, descendant_sequence, mutability_model, transition_model, partition_points):
+    '''Similar to randomize_sequence_constrained, but without constraining the amino acid sequence of the randomized descendant sequence to be the same as the observed descendant.
+    The number of non-syn. and syn. substitutions is still constrained to be the same as the observed numbers
+    '''
+
+    # Initialize randomized sequence:
+    randomized_sequence = deepcopy(parent_sequence)
+
+    seq_length = len(parent_sequence)
+
+    seq_differences = sequence_differences(parent_sequence, descendant_sequence, partition_points)
+
+    # Observed numbers of syn. and non-syn. differences
+    n_syn_diffs = seq_differences['n_syn_diffs']
+    n_nonsyn_diffs = seq_differences['n_nonsyn_diffs']
+
+    # List of nucleotide sites to avoid. Sites in previously hit codons cannot be hit again.
+    fixed_sites = []
+
+    # Initialize counters for the number of syn and non-syn changes
+    syn_changes = 0
+    nonsyn_changes = 0
+
+    # While numbers of syn. and non-syn changes are less than observed numbers
+    while (syn_changes < n_syn_diffs) or (nonsyn_changes < n_nonsyn_diffs):
+
+        # List of sites that can be mutated
+        possible_sites = [site for site in range(seq_length) if site not in fixed_sites]
+
+        # Check if ran out of sites to randomize
+        assert len(possible_sites) > 0, 'Ran out of sites to randomize due to multiple hits not being allowed.'
+
+        # Get only mutabilities for possible sites
+        site_mutabilities = relative_mutabilities(randomized_sequence, mutability_model)
+        site_mutabilities = [site_mutabilities[i] for i in range(len(site_mutabilities)) if i in possible_sites]
+
+        # Re-normalize mutability
+        site_mutabilities = [mutability/sum(site_mutabilities) for mutability in site_mutabilities]
+
+        # Choose a site to be mutated
+        mutated_site = random.choice(possible_sites, 1, p=site_mutabilities)[0]
+
+        # Codon position of mutated site
+        codon_position = mutated_site / 3  # deliberately not a float division
+
+        # Motif centered at mutated site
+        motif = randomized_sequence[mutated_site - 2:mutated_site + 3]
+
+        tprobs = transition_probs(motif, transition_model)
+        nts = tprobs.keys()
+        tprobs = [tprobs[key] for key in tprobs.keys()]
+
+        #Choose a new nucleotide
+        new_nt = random.choice(nts, 1, p=tprobs)[0]
+
+        # Compare amino acids of simulated codon and ancestral sequence
+        ancestral_codon = parent_sequence[codon_position * 3: codon_position * 3 + 3]
+
+        sim_codon = list(randomized_sequence[codon_position * 3: codon_position * 3 + 3])
+        sim_codon[mutated_site % 3] = new_nt
+        sim_codon = ''.join(sim_codon)
+
+        # If simulated codon and ancestral code for the same amino acid...
+        if genetic_code[sim_codon] == genetic_code[ancestral_codon] and syn_changes < n_syn_diffs:
+            syn_changes += 1
+
+            randomized_sequence = list(randomized_sequence)
+            randomized_sequence[mutated_site] = new_nt
+            randomized_sequence = ''.join(randomized_sequence)
+
+            # Prevent all sites in the mutated codon to be mutated in the future
+            fixed_sites = fixed_sites + range(codon_position * 3, codon_position * 3 + 3)
+
+        # else if simulated codon codes for an amino acid change
+        elif genetic_code[sim_codon] != genetic_code[ancestral_codon] and nonsyn_changes < n_nonsyn_diffs:
+            #if sim. codon is not a stop codon (if it is, skip the attempt and randomize again)
+            if genetic_code[sim_codon] != '*':
+                nonsyn_changes += 1
+
+                randomized_sequence = list(randomized_sequence)
+                randomized_sequence[mutated_site] = new_nt
+                randomized_sequence = ''.join(randomized_sequence)
+
+                # Prevent all sites in the mutated codon to be mutated in the future
+                fixed_sites = fixed_sites + range(codon_position * 3, codon_position * 3 + 3)
+
+    # Check that randomized sequence has same # of syn. and non-syn. diffs from ancestral seq. as observed descendant
+    randomized_seq_differences = sequence_differences(parent_sequence, randomized_sequence, partition_points)
+    assert randomized_seq_differences['n_syn_diffs'] == n_syn_diffs, 'Randomized descendant has a different number of syn. differences from ancestor relative to observed descendant'
+    assert randomized_seq_differences['n_nonsyn_diffs'] == n_nonsyn_diffs, 'Randomized descendant has a different number of nonsyn. differences from ancestor relative to observed descendant'
+
+    return randomized_sequence

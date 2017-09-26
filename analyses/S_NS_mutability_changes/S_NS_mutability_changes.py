@@ -9,7 +9,7 @@ sys.path.insert(0, '../rate_correlations/')
 # Import genetic code from simulations folder:
 sys.path.insert(0, '../simulations/modules/')
 
-from mutation_functions import sequence_differences, randomize_sequence
+from mutation_functions import sequence_differences, randomize_sequence_constrained
 
 from mutability_function import seq_mutability, aggregated_mutability, S5F
 from partition_points import partition_points_dic
@@ -465,7 +465,7 @@ def main(argv):
                     S5F_change_nonsyn_CDR = differences['mutability_change_nonsyn_CDR']
 
                     # Get list of codon sites that can be randomized from randomization function
-                    rdm_nonsyn_sites = randomize_sequence(parent_node_sequence, node_sequence, 'S5F', 'S5F', partition_points)[2]
+                    rdm_nonsyn_sites = randomize_sequence_constrained(parent_node_sequence, node_sequence, 'S5F', 'S5F', partition_points)[2]
 
                     # Count number of motifs where both synonymous and nonsynonymous changes happened
                     n_motifs_with_syn_nonsyn_changes = differences['motifs_with_syn_nonsyn']
@@ -681,7 +681,6 @@ def main(argv):
                         new_line_sim += '\n'
 
                         output_file_sim.write(new_line_sim)
-
 
 
 if(__name__ == "__main__"):
