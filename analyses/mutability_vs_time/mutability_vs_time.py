@@ -12,8 +12,13 @@ from scipy.stats import linregress
 # Import mutability functions and partition points from mutability folder
 sys.path.insert(0, '../mutability/')
 
+# Import function to read observed sequences from XML file
+sys.path.insert(0, '../contrasts/')
+
+
 from mutability_function import seq_mutability, aggregated_mutability
 from partition_points import partition_points_dic
+from contrasts_functions import get_mutability_from_XML
 
 def main(argv):
     # Chain id, e.g. CH103_con_run1a, VRC01_L08_log_run1b, scenario2a_rep1
@@ -93,28 +98,12 @@ def main(argv):
     # ========================== READ TIP SEQUENCES FROM XML FILE AND COMPUTE THEIR MUTABILITY==========================
     # ------------------------------- (Tip sequences are not annotated on the BEAST trees) -----------------------------
     
+    mutability_of_obs_seqs = get_mutability_from_XML(xml_file_path, partition_points)
+
     # Dictionaries with mutability for each tip sequence:
-    mutability_WS_tips = {}
-    mutability_aggregated_tips = {}
-
-    # Read XML as string
-    with open(xml_file_path, 'r') as xml_file:
-        xml = xml_file.readlines()
-        xml = ''.join(xml)
-
-    taxon_lines = re.findall(r'<sequence>.*</sequence>', xml, re.DOTALL)[0].split('</sequence>')
-    for line in taxon_lines[0:len(taxon_lines) - 1]:
-        taxon_id = re.search(r'taxon idref=".*"', line).group().replace("taxon idref=", '').replace('"', '')
-        # Ignoring a weird VRC26 sequence whose CDR2 is entirely gaps:
-        if taxon_id != 'KJ134124_119':
-            sequence = re.search(r'/>\n\t\t\t.*\n\t\t', line).group().replace('/>\n\t\t\t', '').replace('\n\t\t', '')
-
-            mutability_WS_tips[taxon_id] = seq_mutability(sequence)
-
-            if partition_points is not None:
-                mutability_aggregated_tips[taxon_id] = aggregated_mutability(sequence, partition_points)
-        else:
-            print 'Skipping VRC26 sequence with missing CDR2 (KJ134124_119)'
+    obs_sequence = mutability_of_obs_seqs['sequences']
+    mutability_WS_tips = mutability_of_obs_seqs['whole_sequence']
+    mutability_aggregated_tips = mutability_of_obs_seqs['aggregated_by_region']
 
     # ========================================= OPEN TREES FILE AND OUTPUT FILE ========================================
 
