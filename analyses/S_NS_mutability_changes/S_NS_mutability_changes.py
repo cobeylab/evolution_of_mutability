@@ -22,111 +22,74 @@ from copy import deepcopy
 import csv
 from itertools import permutations
 
+# Import function to read observed sequences from XML file
+sys.path.insert(0, '../contrasts/')
+from contrasts_functions import get_mutability_from_XML
+
+
 def main(argv):
     # Chain id, e.g. CH103_con_run1a, VRC01_L08_log_run1b, scenario2a_rep1
     chain_id = str(argv[1])
 
     # ================== RETRIEVE DIRECTORIES, OBS. SEQUENCES AND FR/CDR PARTITION POINTS FROM CHAIN ID ================
     # If chain is from an observed clone:
-    if chain_id.find('scenario') is -1:
-        if chain_id.find('CH103') > -1:
-            if chain_id.find('CH103L') > -1:
-                clone = 'CH103L'
-            else:
-                clone = 'CH103'
-        elif chain_id.find('VRC26') > -1:
-            if chain_id.find('VRC26L') > -1:
-                clone = 'VRC26L'
-            else:
-                clone = 'VRC26'
-        elif chain_id.find('VRC01') > -1:
-            if chain_id.find('VRC01_01') > -1:
-                clone = 'VRC01_01'
-            elif chain_id.find('VRC01_13') > -1:
-                clone = 'VRC01_13'
-            elif chain_id.find('VRC01_19') > -1:
-                clone = 'VRC01_19'
-            elif chain_id.find('VRC01_H0306') > -1:
-                clone = 'VRC01_H0306'
-            elif chain_id.find('VRC01_L0306') > -1:
-                clone = 'VRC01_L0306'
-            elif chain_id.find('VRC01_H08') > -1:
-                clone = 'VRC01_H08'
-            elif chain_id.find('VRC01_L08') > -1:
-                clone = 'VRC01_L08'
+    if chain_id.find('CH103') > -1:
+        if chain_id.find('CH103L') > -1:
+            clone = 'CH103L'
+        else:
+            clone = 'CH103'
+    elif chain_id.find('VRC26') > -1:
+        if chain_id.find('VRC26L') > -1:
+            clone = 'VRC26L'
+        else:
+            clone = 'VRC26'
+    elif chain_id.find('VRC01') > -1:
+        if chain_id.find('VRC01_01') > -1:
+            clone = 'VRC01_01'
+        elif chain_id.find('VRC01_13') > -1:
+            clone = 'VRC01_13'
+        elif chain_id.find('VRC01_19') > -1:
+            clone = 'VRC01_19'
+        elif chain_id.find('VRC01_H0306') > -1:
+            clone = 'VRC01_H0306'
+        elif chain_id.find('VRC01_L0306') > -1:
+            clone = 'VRC01_L0306'
+        elif chain_id.find('VRC01_H08') > -1:
+            clone = 'VRC01_H08'
+        elif chain_id.find('VRC01_L08') > -1:
+            clone = 'VRC01_L08'
 
-        if chain_id.find('_con_') > -1:
-            prior = 'constant'
-        elif chain_id.find('_exp_') > -1:
-            prior = 'exponential'
-        elif chain_id.find('_log_') > -1:
-            prior = 'logistic'
+    if chain_id.find('_con_') > -1:
+        prior = 'constant'
+    elif chain_id.find('_exp_') > -1:
+        prior = 'exponential'
+    elif chain_id.find('_log_') > -1:
+        prior = 'logistic'
 
-        # (TEMPORARY) if chain is an interrupted chain, add 'int' to clone:
-        if chain_id.find('int') > -1:
-            clone = clone + 'int'
+    # (TEMPORARY) if chain is an interrupted chain, add 'int' to clone:
+    if chain_id.find('int') > -1:
+        clone = clone + 'int'
 
-        partition_points = partition_points_dic[clone]
-        chain_directory = '../../results/BEAST/observed_lineages/' + clone + '_' + prior + '/' + chain_id + '/'
-        MCC_tree_file_path = chain_directory + chain_id + '_MCC_tree.tree'
+    partition_points = partition_points_dic[clone]
+    chain_directory = '../../results/BEAST/observed_lineages/' + clone + '_' + prior + '/' + chain_id + '/'
+    MCC_tree_file_path = chain_directory + chain_id + '_MCC_tree.tree'
 
-        xml_file_path = '../../analyses/BEAST/observed_lineages/' + clone + '_' + prior + '/'
-        xml_file_path += chain_id[0:len(chain_id) - 1] + '.xml'
+    xml_file_path = '../../analyses/BEAST/observed_lineages/' + clone + '_' + prior + '/'
+    xml_file_path += chain_id[0:len(chain_id) - 1] + '.xml'
 
-        output_directory = '../../results/S_NS_mutability_changes/observed_lineages/' + clone + '_' + prior + '/'
+    output_directory = '../../results/S_NS_mutability_changes/observed_lineages/' + clone + '_' + prior + '/'
 
-        output_file_path_observed = output_directory + chain_id + '_observed_MCC.csv'
-        output_file_path_simulated = output_directory + chain_id + '_simulated_MCC.csv'
-        output_file_path_motifs = output_directory + chain_id + '_motif_changes_MCC.csv'
-
-
-
-    # If chain is from a simulated scenario
-    else:
-        scenario = re.search(r'scenario[1-9][abc]*', chain_id).group()
-        MCC_tree_file_path = '../../results/BEAST/simulated_alignments/' + chain_id + '/'
-        MCC_tree_file_path += chain_id + '_MCC_tree.tree'
-
-        xml_file_path = '../../analyses/BEAST/simulated_alignments/' + chain_id + '/' + chain_id + '.xml'
-
-        output_directory = '../../results/S_NS_mutability_changes/simulated_alignments/' + chain_id + '/'
-        output_file_path_observed = output_directory + chain_id + '_observed_MCC.csv'
-        output_file_path_simulated = output_directory + chain_id + '_simulated_MCC.csv'
-        output_file_path_motifs = output_directory + chain_id + '_motif_changes_MCC.csv'
-
-        partition_points = partition_points_dic[chain_id]
-
+    output_file_path_observed = output_directory + chain_id + '_observed_MCC.csv'
+    output_file_path_simulated = output_directory + chain_id + '_simulated_MCC.csv'
 
     # ========================== READ TIP SEQUENCES FROM XML FILE AND COMPUTE THEIR MUTABILITY==========================
     # ------------------------------- (Tip sequences are not annotated on the BEAST trees) -----------------------------
+    mutability_of_obs_seqs = get_mutability_from_XML(xml_file_path, partition_points)
 
     # Dictionaries with mutability for each tip sequence:
-    mutability_WS_tips = {}
-    mutability_aggregated_tips = {}
-
-    # Dictionary with observed sequences
-    obs_sequence = {}
-
-    # Read XML as string
-    with open(xml_file_path, 'r') as xml_file:
-        xml = xml_file.readlines()
-        xml = ''.join(xml)
-
-    taxon_lines = re.findall(r'<sequence>.*</sequence>', xml, re.DOTALL)[0].split('</sequence>')
-    for line in taxon_lines[0:len(taxon_lines) - 1]:
-        taxon_id = re.search(r'taxon idref=".*"', line).group().replace("taxon idref=", '').replace('"', '')
-        # Ignoring a weird VRC26 sequence whose CDR2 is entirely gaps:
-        if taxon_id != 'KJ134124_119':
-            sequence = re.search(r'/>\n\t\t\t.*\n\t\t', line).group().replace('/>\n\t\t\t', '').replace('\n\t\t', '')
-
-            mutability_WS_tips[taxon_id] = seq_mutability(sequence)
-            obs_sequence[taxon_id] = sequence
-
-            if partition_points is not None:
-                mutability_aggregated_tips[taxon_id] = aggregated_mutability(sequence, partition_points)
-        else:
-            print 'Skipping VRC26 sequence with missing CDR2 (KJ134124_119)'
-
+    obs_sequence = mutability_of_obs_seqs['sequences']
+    mutability_WS_tips = mutability_of_obs_seqs['whole_sequence']
+    mutability_aggregated_tips = mutability_of_obs_seqs['aggregated_by_region']
 
     # Get length of sequences
     seq_length = len(obs_sequence[obs_sequence.keys()[0]])
@@ -143,13 +106,6 @@ def main(argv):
                 codon_position_rates[1] = float(line.split('\t')[1])
             if line.find('CP3.mu') > -1:
                 codon_position_rates[2] = float(line.split('\t')[1])
-
-    #global codon_relative_rates
-
-    #randomize_sequence('AAACCCGGGTTT','AACCCGGGTTTA', codon_position_rates,'S5F')
-
-    # ================================ DICTIONARY WITH N CHANGES FOR EACH MOTIF ========================================
-    motif_changes = {}
 
 
     # ==================================== OPEN TREE FILE AND OUTPUT FILES =============================================
@@ -464,28 +420,9 @@ def main(argv):
                     S5F_change_syn_CDR = differences['mutability_change_syn_CDR']
                     S5F_change_nonsyn_CDR = differences['mutability_change_nonsyn_CDR']
 
-                    # Get list of codon sites that can be randomized from randomization function
-                    rdm_nonsyn_sites = randomize_sequence_constrained(parent_node_sequence, node_sequence, 'S5F', 'S5F', partition_points)[2]
 
                     # Count number of motifs where both synonymous and nonsynonymous changes happened
                     n_motifs_with_syn_nonsyn_changes = differences['motifs_with_syn_nonsyn']
-
-                    # Add motifs in the sequences to list of motifs present in the lineage
-                    for i in range(2, (seq_length - 2)):
-                        obs_motif = parent_node_sequence[i - 2:i + 3]
-                        if obs_motif not in motif_changes.keys() and set(obs_motif) <= {'A', 'G', 'C', 'T'}:
-                            motif_changes[obs_motif] = {'syn':0, 'nonsyn':0}
-
-                    for i in range(2, (seq_length - 2)):
-                        obs_motif = node_sequence[i - 2:i + 3]
-                        if obs_motif not in motif_changes.keys() and set(obs_motif) <= {'A', 'G', 'C', 'T'}:
-                            motif_changes[obs_motif] = {'syn': 0, 'nonsyn': 0}
-
-                    # Record motif changes observed on branch:
-                    branch_motif_changes = differences['mutated_motifs']
-                    for key in branch_motif_changes:
-                        for sub_type in branch_motif_changes[key].keys():
-                            motif_changes[key][sub_type] += branch_motif_changes[key][sub_type]
 
                     # Determine if parent->node branch is part of the trunk, and count branch's n. descendants
                     # Branch is in trunk if it has desc. at last time but not if it only has desc. from last time
