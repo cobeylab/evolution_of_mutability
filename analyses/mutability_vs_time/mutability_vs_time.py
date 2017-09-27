@@ -12,13 +12,14 @@ from scipy.stats import linregress
 # Import mutability functions and partition points from mutability folder
 sys.path.insert(0, '../mutability/')
 
-# Import function to read observed sequences from XML file
-sys.path.insert(0, '../contrasts/')
-
 
 from mutability_function import seq_mutability, aggregated_mutability
 from partition_points import partition_points_dic
+
+# Import function to read observed sequences from XML file
+sys.path.insert(0, '../contrasts/')
 from contrasts_functions import get_mutability_from_XML
+
 
 def main(argv):
     # Chain id, e.g. CH103_con_run1a, VRC01_L08_log_run1b, scenario2a_rep1

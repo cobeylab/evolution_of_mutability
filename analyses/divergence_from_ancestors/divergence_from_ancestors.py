@@ -7,7 +7,7 @@ sys.path.insert(0, '../mutability/')
 # Import gen. code and function for identifying sequence differences from syn./non-syn analysis:
 sys.path.insert(0, '../S_NS_mutability_changes/')
 
-from mutation_functions import sequence_differences, randomize_sequence
+from mutation_functions import sequence_differences
 from partition_points import partition_points_dic
 from gen_code_DNA import genetic_code
 from dendropy import Tree
@@ -17,6 +17,10 @@ import re
 from copy import deepcopy
 import csv
 #from itertools import permutations
+
+# Import function to read observed sequences from XML file
+sys.path.insert(0, '../contrasts/')
+from contrasts_functions import get_mutability_from_XML
 
 def main(argv):
     # Chain id, e.g. CH103_con_run1a, VRC01_L08_log_run1b, scenario2a_rep1
@@ -76,30 +80,12 @@ def main(argv):
 
     # ======================================= READ TIP SEQUENCES FROM XML FILE =========================================
     # ------------------------------- (Tip sequences are not annotated on the BEAST trees) -----------------------------
+    mutability_of_obs_seqs = get_mutability_from_XML(xml_file_path, partition_points)
 
-    # Dictionary with observed sequences
-    obs_sequence = {}
-
-    # Read XML as string
-    with open(xml_file_path, 'r') as xml_file:
-        xml = xml_file.readlines()
-        xml = ''.join(xml)
-
-    taxon_lines = re.findall(r'<sequence>.*</sequence>', xml, re.DOTALL)[0].split('</sequence>')
-    for line in taxon_lines[0:len(taxon_lines) - 1]:
-        taxon_id = re.search(r'taxon idref=".*"', line).group().replace("taxon idref=", '').replace('"', '')
-        # Ignoring a weird VRC26 sequence whose CDR2 is entirely gaps:
-        if taxon_id != 'KJ134124_119':
-            sequence = re.search(r'/>\n\t\t\t.*\n\t\t', line).group().replace('/>\n\t\t\t', '').replace('\n\t\t', '')
-
-            obs_sequence[taxon_id] = sequence
-        else:
-            print 'Skipping VRC26 sequence with missing CDR2 (KJ134124_119)'
-
-
-    # Get length of sequences
-    seq_length = len(obs_sequence[obs_sequence.keys()[0]])
-
+    # Dictionaries with mutability for each tip sequence:
+    obs_sequence = mutability_of_obs_seqs['sequences']
+    mutability_WS_tips = mutability_of_obs_seqs['whole_sequence']
+    mutability_aggregated_tips = mutability_of_obs_seqs['aggregated_by_region']
 
     # ==================================== OPEN TREE FILE AND OUTPUT FILES =============================================
 
