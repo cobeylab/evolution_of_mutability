@@ -1,4 +1,4 @@
-#!/usr/bin/python
+ #!/usr/bin/python
 
 """Takes each tree from a NEXUS file (output from BEAST). For each node on each tree, finds sequence mutability at that node based on the inferred ancestral sequence (or observed sequence, for the tips). Computes pair-wise linear regression statistics between mutability (as a response variable) and the distance and time between each the node and the root of the tree (predictors).
  This is a "by-node" analysis, as opposed to the "by-branch" analysis in "mutability_correlations"
