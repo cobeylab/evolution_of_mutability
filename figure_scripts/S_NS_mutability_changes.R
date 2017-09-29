@@ -26,13 +26,13 @@ VRC01_19_dataframe_obs <- read.table(paste(results_directory, 'VRC01_19_logistic
 
 
 # ======= GET DATAFRAMES WITH SIMULATED MCC MUTABILITY RESULTS FOR ALL LINEAGES
-CH103_dataframe_sim <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_simulated_MCC.csv', sep = ''), header = T, sep = ',')
-CH103L_dataframe_sim <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_simulated_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26_dataframe_sim <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_simulated_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26L_dataframe_sim <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_simulated_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_01_dataframe_sim <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_simulated_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_13_dataframe_sim <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_simulated_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_19_dataframe_sim <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_simulated_MCC.csv', sep = ''), header = T, sep = ',')
+CH103_dataframe_sim_constrained <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_simulated_MCC_constrained.csv', sep = ''), header = T, sep = ',')
+CH103L_dataframe_sim_constrained <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_simulated_MCC_constrained.csv', sep = ''), header = T, sep = ',')
+VRC26_dataframe_sim_constrained <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_simulated_MCC_constrained.csv', sep = ''), header = T, sep = ',')
+VRC26L_dataframe_sim_constrained <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_simulated_MCC_constrained.csv', sep = ''), header = T, sep = ',')
+VRC01_01_dataframe_sim_constrained <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_simulated_MCC_constrained.csv', sep = ''), header = T, sep = ',')
+VRC01_13_dataframe_sim_constrained <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_simulated_MCC_constrained.csv', sep = ''), header = T, sep = ',')
+VRC01_19_dataframe_sim_constrained <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_simulated_MCC_constrained.csv', sep = ''), header = T, sep = ',')
 
 
 dataframe_list_obs <- list('CH103' = CH103_dataframe_obs, 'CH103L' = CH103L_dataframe_obs,
@@ -40,10 +40,10 @@ dataframe_list_obs <- list('CH103' = CH103_dataframe_obs, 'CH103L' = CH103L_data
                            'VRC01_01' = VRC01_01_dataframe_obs, 'VRC01_13' = VRC01_13_dataframe_obs,
                            'VRC01_19' = VRC01_19_dataframe_obs)                        
 
-dataframe_list_sim <- list('CH103' = CH103_dataframe_sim, 'CH103L' = CH103L_dataframe_sim,
-                        'VRC26' = VRC26_dataframe_sim, 'VRC26L' = VRC26L_dataframe_sim,
-                        'VRC01_01' = VRC01_01_dataframe_sim, 'VRC01_13' = VRC01_13_dataframe_sim,
-                        'VRC01_19' = VRC01_19_dataframe_sim)
+dataframe_list_sim_constrained <- list('CH103' = CH103_dataframe_sim_constrained, 'CH103L' = CH103L_dataframe_sim_constrained,
+                        'VRC26' = VRC26_dataframe_sim_constrained, 'VRC26L' = VRC26L_dataframe_sim_constrained,
+                        'VRC01_01' = VRC01_01_dataframe_sim_constrained, 'VRC01_13' = VRC01_13_dataframe_sim_constrained,
+                        'VRC01_19' = VRC01_19_dataframe_sim_constrained)
 
 
 # ====== COMBINED DATAFRAME WITH RESULTS FOR ALL LINEAGES =======
@@ -77,7 +77,7 @@ correlation_CP_S5F_ulim <- c()
 region <- 'WS'
 for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19')){
   clone_dataframe_obs <- dataframe_list_obs[[clone]] 
-  clone_dataframe_sim <- dataframe_list_sim[[clone]]
+  clone_dataframe_sim <- dataframe_list_sim_constrained[[clone]]
   
   #for(metric in c('S5F','HS','OHS')){
   for(metric in c('S5F')){
@@ -454,7 +454,7 @@ pl_syn <- ggplot(subset(combined_dataframe, substitution_class == 'syn_only'),
 # ================================================ COMBINING PLOTS ====================================================
 combined_plot <- plot_grid(total_changes_pl, pl_syn, labels = c("a)", "b)"),
                            rel_widths = c(1.5,1), label_size = 20, nrow =2)
-
-save_plot("S_NS_mutability_changes.pdf", combined_plot,
-          base_height = 10, base_width = 7.5
-)
+print("WARNING: PLOT NOT SAVED")
+#save_plot("S_NS_mutability_changes.pdf", combined_plot,
+#          base_height = 10, base_width = 7.5
+#)

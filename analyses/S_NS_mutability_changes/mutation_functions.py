@@ -80,6 +80,9 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     assert(len(parent_sequence) == len(descendant_sequence))
     seq_length = len(parent_sequence)
 
+    # Convert partition_points into Python indices (i.e. subtract 1):
+    partition_points = [(partition_points[i] - 1) for i in range(len(partition_points))]
+
     # List of sites that belong to FRs (from partition_points)
     FR_sites = [range(partition_points[i], partition_points[i + 1]) for i in [0,2,4]]
     FR_sites = [j for i in FR_sites for j in i]

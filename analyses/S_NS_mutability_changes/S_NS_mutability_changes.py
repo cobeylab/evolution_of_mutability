@@ -9,18 +9,14 @@ sys.path.insert(0, '../rate_correlations/')
 # Import genetic code from simulations folder:
 sys.path.insert(0, '../simulations/modules/')
 
-from mutation_functions import sequence_differences, randomize_sequence_constrained
+from mutation_functions import sequence_differences, randomize_sequence_constrained, randomize_sequence_unconstrained
 
 from mutability_function import seq_mutability, aggregated_mutability, S5F
 from partition_points import partition_points_dic
-from gen_code_DNA import genetic_code
 from dendropy import Tree
 
 import re
-from numpy import random, percentile, mean
 from copy import deepcopy
-import csv
-from itertools import permutations
 
 # Import function to read observed sequences from XML file
 sys.path.insert(0, '../contrasts/')
@@ -80,7 +76,9 @@ def main(argv):
     output_directory = '../../results/S_NS_mutability_changes/observed_lineages/' + clone + '_' + prior + '/'
 
     output_file_path_observed = output_directory + chain_id + '_observed_MCC.csv'
-    output_file_path_simulated = output_directory + chain_id + '_simulated_MCC.csv'
+    output_file_path_simulated_constrained = output_directory + chain_id + '_simulated_MCC_constrained.csv'
+    output_file_path_simulated_unconstrained = output_directory + chain_id + '_simulated_MCC_unconstrained.csv'
+
 
     # ========================== READ TIP SEQUENCES FROM XML FILE AND COMPUTE THEIR MUTABILITY==========================
     # ------------------------------- (Tip sequences are not annotated on the BEAST trees) -----------------------------
@@ -107,11 +105,10 @@ def main(argv):
             if line.find('CP3.mu') > -1:
                 codon_position_rates[2] = float(line.split('\t')[1])
 
-
     # ==================================== OPEN TREE FILE AND OUTPUT FILES =============================================
-
     with open(MCC_tree_file_path, 'r') as tree_file, open(output_file_path_observed, 'w') as output_file_obs, open(
-            output_file_path_simulated, 'w') as output_file_sim:
+            output_file_path_simulated_constrained, 'w') as output_file_sim_constrained, open(
+        output_file_path_simulated_unconstrained, 'w') as output_file_sim_unconstrained:
 
         # Header shared by observed and simulated output files:
         output_header_base = 'parent,child,parent_distance_to_root,parent_time_to_root,branch_time,branch_exp_subs,'
@@ -150,29 +147,20 @@ def main(argv):
         
         # Header for output file with simulation results:
         output_header_sim = 'replicate,' + output_header_base
-        for region in ['WS']:
+        for region in ['WS', 'FR', 'CDR']:
         # Looking at whole-sequence only for now
             #for metric in ['S5F','7M','HS','CS','OHS']:
             for metric in ['S5F']:
-
-                # Mutability changes under S5F mutations/S5F transitions model
-                output_header_sim += ',' + metric + '_' + region + '_change_S5FMut_S5FTrans_total'
-                output_header_sim += ',' + metric + '_' + region + '_change_S5FMut_S5FTrans_syn'
-                output_header_sim += ',' + metric + '_' + region + '_change_S5FMut_S5FTrans_nonsyn'
-
-                # Mutability changes under uniform mutations/S5F transitions model
-                output_header_sim += ',' + metric + '_' + region + '_change_uniformMut_S5FTrans_total'
-                output_header_sim += ',' + metric + '_' + region + '_change_uniformMut_S5FTrans_syn'
-                output_header_sim += ',' + metric + '_' + region + '_change_uniformMut_S5FTrans_nonsyn'
-
-                # Mutability changes under codon-position-based mutations / S5F based transitions model:
-                output_header_sim += ',' + metric + '_' + region + '_change_CPMut_S5FTrans_total'
-                output_header_sim += ',' + metric + '_' + region + '_change_CPMut_S5FTrans_syn'
-                output_header_sim += ',' + metric + '_' + region + '_change_CPMut_S5FTrans_nonsyn'
+                for mutability_model in ['S5F', 'uniform', 'CP']:
+                    # Mutability changes under S5F mutations/S5F transitions model
+                    output_header_sim += ',' + metric + '_' + region + '_change_' + mutability_model + 'Mut_S5FTrans_total'
+                    output_header_sim += ',' + metric + '_' + region + '_change_' + mutability_model + 'Mut_S5FTrans_syn'
+                    output_header_sim += ',' + metric + '_' + region + '_change_' + mutability_model + 'Mut_S5FTrans_nonsyn'
 
         output_header_sim += '\n'
 
-        output_file_sim.write(output_header_sim)
+        output_file_sim_constrained.write(output_header_sim)
+        output_file_sim_unconstrained.write(output_header_sim)
 
         # ========================== DICTIONARY LINKING BEAST NUMBERING (FROM NEXUS) TO TAXON LABELS ===================
         number_to_id = {}
@@ -224,15 +212,12 @@ def main(argv):
             for variable in variables:
                 value = re.search(variable + '=[^,^\]]*', block)
                 if value is not None:
-                    #assert value.group() is not 'height=64.72259232302139'
                     new_block += value.group() + ','
 
             #Remove extra comma at the end:
             new_block = new_block[0:(len(new_block) - 1)]
 
             new_block += ']'
-
-            #assert(new_block.find('height=64.72259232302139') is -1)
 
             tree_string = tree_string.replace(block,new_block)
 
@@ -307,11 +292,6 @@ def main(argv):
                     while focal_node is not tree.nodes()[0]:
                         parent_to_root_time_lengths.append(focal_node.edge_length)
                         parent_to_root_rates.append(float(focal_node.annotations.get_value('rate')))
-                        #RC_length = float(focal_node.annotations.get_value('S')) + float(
-                            #focal_node.annotations.get_value('N'))
-                        #RC_length = float(RC_length) / n_sites
-                        #parent_to_root_lengths_RC.append(RC_length)
-
                         focal_node = focal_node.parent_node
 
                     assert sum(parent_to_root_time_lengths) == parent_time
@@ -319,9 +299,6 @@ def main(argv):
                     # Find parent's distance to the root by multiplying molecular clock rates and time lengths, then summing
                     parent_to_root_distance = sum([parent_to_root_time_lengths[i] * parent_to_root_rates[i] for i in
                                                    range(len(parent_to_root_rates))])
-
-                    # Find parent's robust counting distance by summing robust counting branch lengths
-                    #parent_to_root_distance_RC = sum(parent_to_root_lengths_RC)
 
                     # Find node mutability, if it is a tip:
                     if node.is_leaf():
@@ -364,9 +341,7 @@ def main(argv):
                         node_mutability_WS = seq_mutability(node_sequence)
                         node_mutability_aggregated = aggregated_mutability(node_sequence, partition_points)
 
-
                     # Find mutability of parent node:
-
                     parent_node_CP1 = parent_node.annotations.get_value(alignment_id + '.CP1')
                     parent_node_CP2 = parent_node.annotations.get_value(alignment_id + '.CP2')
                     parent_node_CP3 = parent_node.annotations.get_value(alignment_id + '.CP3')
@@ -420,9 +395,12 @@ def main(argv):
                     S5F_change_syn_CDR = differences['mutability_change_syn_CDR']
                     S5F_change_nonsyn_CDR = differences['mutability_change_nonsyn_CDR']
 
-
                     # Count number of motifs where both synonymous and nonsynonymous changes happened
                     n_motifs_with_syn_nonsyn_changes = differences['motifs_with_syn_nonsyn']
+
+                    # Count number of non-synonymous codon changes that can be randomized in constrained simulations
+                    n_nonsyn_randomizable = randomize_sequence_constrained(parent_node_sequence, node_sequence,
+                                                                           'S5F','S5F', partition_points)[1]
 
                     # Determine if parent->node branch is part of the trunk, and count branch's n. descendants
                     # Branch is in trunk if it has desc. at last time but not if it only has desc. from last time
@@ -464,85 +442,67 @@ def main(argv):
                     # Branch length (exp subs per site)
                     branch_exp_subs = float(node.annotations.get_value('rate')) * float(branch_time)
 
-
-
-                    # ================================= SIMULATE 100 descendant sequences per model ============================
-                    simulated_sequences = {}
-                    simulated_sequences['S5FMut_S5FTrans'] = []
-                    simulated_sequences['uniformMut_S5FTrans'] = []
-                    simulated_sequences['CPMut_S5FTrans'] = []
-
+                    # ============================== SIMULATE 100 descendant sequences per model =======================
                     n_reps = 100
 
-                    # Dictionaries to store mutability (for whole sequence and aggregated) for replicate sequences under each model
-                    # Subdictionaries for mutability of simulated descendant and for descendant with S or NS subs only:
-                    mutability_change_WS_S5FMut_S5FTrans = {'total':{'mean_S5F': []},'syn_only': {'mean_S5F': []},
-                                                     'nonsyn_only': {'mean_S5F': []}}
+                    # Dictionary with S5F changes by simulation type (constrained / unconstrained) and mutability model
+                    S5F_changes = {'constrained': {'S5F': {}, 'uniform': {}, 'CP': {}},
+                                   'unconstrained': {'S5F': {}, 'uniform': {}, 'CP': {}}
+                                   }
 
-                    mutability_change_WS_uniformMut_S5FTrans = {'total': {'mean_S5F': []}, 'syn_only': {'mean_S5F': []},
-                                                            'nonsyn_only': {'mean_S5F': []}}
-
-                    mutability_change_WS_CPMut_S5FTrans = {'total': {'mean_S5F': []}, 'syn_only': {'mean_S5F': []},
-                                                                'nonsyn_only': {'mean_S5F': []}}
-
-                    # Get number of randomizable non-synonymous codon changes using the simulation function
-                    n_nonsyn_randomizable = randomize_sequence(parent_node_sequence,node_sequence,'S5F','S5F', partition_points)[1]
+                    for key in S5F_changes.keys():
+                        for subkey in S5F_changes[key].keys():
+                            S5F_changes[key][subkey] = {'WS':{'total':[], 'syn': [], 'nonsyn': []},
+                                                        'FR':{'total':[], 'syn': [], 'nonsyn': []},
+                                                        'CDR':{'total':[], 'syn': [], 'nonsyn': []}
+                                                        }
 
                     for _ in range(n_reps):
+                        # Generate one simulated sequence per mutability model / constrained vs. unconstrained
+                        for simulation_type in ['constrained','unconstrained']:
 
-                        # Simulate sequences
-                        S5F_S5F_sequence = randomize_sequence(parent_node_sequence,node_sequence,'S5F','S5F',
-                                                              partition_points)[0]
-                        uniform_S5F_sequence = randomize_sequence(parent_node_sequence,node_sequence,'uniform','S5F',
-                                                                  partition_points)[0]
-                        CP_S5F_sequence = randomize_sequence(parent_node_sequence,node_sequence,codon_position_rates,
-                                                             'S5F', partition_points)[0]
+                            if simulation_type == 'constrained':
+                                randomization_function = randomize_sequence_constrained
+                            elif simulation_type == 'unconstrained':
+                                randomization_function = randomize_sequence_unconstrained
 
-                        # Compute whole-sequence S5F mutability changes in simulated sequences (rel. to obs. parent):
-                        S5F_S5F_mutability_change_syn = sequence_differences(parent_node_sequence, S5F_S5F_sequence,partition_points)[
-                            'mutability_change_syn']
-                        S5F_S5F_mutability_change_nonsyn = sequence_differences(parent_node_sequence, S5F_S5F_sequence,partition_points)[
-                            'mutability_change_nonsyn']
-                        S5F_S5F_mutability_change_total = S5F_S5F_mutability_change_syn + S5F_S5F_mutability_change_nonsyn
+                            for mutability_model in ['S5F','uniform', 'CP']:
 
-                        uniform_S5F_mutability_change_syn = sequence_differences(parent_node_sequence, uniform_S5F_sequence,partition_points)[
-                            'mutability_change_syn']
-                        uniform_S5F_mutability_change_nonsyn = sequence_differences(parent_node_sequence, uniform_S5F_sequence,partition_points)[
-                            'mutability_change_nonsyn']
-                        uniform_S5F_mutability_change_total = uniform_S5F_mutability_change_syn + uniform_S5F_mutability_change_nonsyn
+                                mut_model = mutability_model
+                                if mut_model == 'CP':
+                                    mut_model = codon_position_rates
 
-                        CP_S5F_mutability_change_syn = sequence_differences(parent_node_sequence, CP_S5F_sequence,partition_points)[
-                            'mutability_change_syn']
-                        CP_S5F_mutability_change_nonsyn = sequence_differences(parent_node_sequence, CP_S5F_sequence,partition_points)[
-                            'mutability_change_nonsyn']
-                        CP_S5F_mutability_change_total = CP_S5F_mutability_change_syn + CP_S5F_mutability_change_nonsyn
+                                sim_seq = randomization_function(
+                                    parent_node_sequence, node_sequence, mut_model, 'S5F', partition_points)
 
-                        # Store values in dictionaries containing results for all replicate sequences
-                        #for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
-                        for metric in ['mean_S5F']:
+                                if simulation_type == 'constrained':
+                                    sim_seq = sim_seq[0]
 
-                            mutability_change_WS_S5FMut_S5FTrans['total'][metric].append(S5F_S5F_mutability_change_total)
+                                # Compute changes in S5F mutability between simulated sequences and parent sequence:
+                                diffs_from_parent = sequence_differences(parent_node_sequence, sim_seq, partition_points)
 
-                            mutability_change_WS_uniformMut_S5FTrans['total'][metric].append(uniform_S5F_mutability_change_total)
+                                # Store changes in dictionary
+                                for region in ['WS','FR','CDR']:
 
-                            mutability_change_WS_CPMut_S5FTrans['total'][metric].append(CP_S5F_mutability_change_total)
+                                    # WS is omitted in diffs_from_parent dictionary keys
+                                    region_id = region
+                                    if region_id == 'WS':
+                                        region_id = ''
+                                    else:
+                                        region_id = '_' + region_id
 
+                                    syn_change = diffs_from_parent['mutability_change_syn' + region_id]
+                                    nonsyn_change = diffs_from_parent['mutability_change_nonsyn' + region_id]
+                                    total_change = syn_change + nonsyn_change
 
-                            mutability_change_WS_S5FMut_S5FTrans['syn_only'][metric].append(S5F_S5F_mutability_change_syn)
+                                    S5F_changes[simulation_type][mutability_model][region]['syn'].append(syn_change)
+                                    S5F_changes[simulation_type][mutability_model][region]['nonsyn'].append(
+                                        nonsyn_change)
+                                    S5F_changes[simulation_type][mutability_model][region]['total'].append(
+                                        total_change)
 
-                            mutability_change_WS_uniformMut_S5FTrans['syn_only'][metric].append(uniform_S5F_mutability_change_syn)
-
-                            mutability_change_WS_CPMut_S5FTrans['syn_only'][metric].append(CP_S5F_mutability_change_syn)
-
-
-                            mutability_change_WS_S5FMut_S5FTrans['nonsyn_only'][metric].append(S5F_S5F_mutability_change_nonsyn)
-
-                            mutability_change_WS_uniformMut_S5FTrans['nonsyn_only'][metric].append(uniform_S5F_mutability_change_nonsyn)
-
-                            mutability_change_WS_CPMut_S5FTrans['nonsyn_only'][metric].append(CP_S5F_mutability_change_nonsyn)
-
-                    # ======================================= OUTPUT RESULTS ===================================================
-                    # Follow exact same order as variable names in output_header!
+                    # ===================================== OUTPUT RESULTS =============================================
+                    # Follow exact same order as variable names in output_header
                     new_line_base = str(parent_node_number) + ',' + str(node_number) + ','
                     new_line_base += str(parent_to_root_distance) + ',' + str(parent_time) + ',' + branch_time + ','
                     new_line_base += str(branch_exp_subs) + ',' + str(n_nt_diffs) + ','
@@ -593,32 +553,29 @@ def main(argv):
 
                     output_file_obs.write(new_line_obs)
 
-                    # Results for simulations
-                    for i in range(n_reps):
-                        new_line_sim = str(i+1) + ',' + new_line_base
-                        #for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
-                        for metric in ['mean_S5F']:
-                            # ------ Results from the S5F-mutability/S5F-transitions model ------
-                            # Add changes in mutability under S5F-S5F model:
-                            new_line_sim += str(mutability_change_WS_S5FMut_S5FTrans['total'][metric][i]) + ','
-                            new_line_sim += str(mutability_change_WS_S5FMut_S5FTrans['syn_only'][metric][i]) + ','
-                            new_line_sim += str(mutability_change_WS_S5FMut_S5FTrans['nonsyn_only'][metric][i]) + ','
+                    # Results for simulations, output to separate files for constrained / unconstrained
 
-                            # Add changes in mutability under uniform-S5F model:
-                            new_line_sim += str(mutability_change_WS_uniformMut_S5FTrans['total'][metric][i]) + ','
-                            new_line_sim += str(mutability_change_WS_uniformMut_S5FTrans['syn_only'][metric][i]) + ','
-                            new_line_sim += str(mutability_change_WS_uniformMut_S5FTrans['nonsyn_only'][metric][i]) + ','
+                    for simulation_type in ['constrained', 'unconstrained']:
 
-                            # Add changes in mutability under codon-position-S5F model:
-                            new_line_sim += str(mutability_change_WS_CPMut_S5FTrans['total'][metric][i]) + ','
-                            new_line_sim += str(mutability_change_WS_CPMut_S5FTrans['syn_only'][metric][i]) + ','
-                            new_line_sim += str(mutability_change_WS_CPMut_S5FTrans['nonsyn_only'][metric][i]) + ','
+                        if simulation_type == 'constrained':
+                            results_file = output_file_sim_constrained
+                        elif simulation_type == 'unconstrained':
+                            results_file = output_file_sim_unconstrained
 
-                        new_line_sim = new_line_sim[:-1]
-                        new_line_sim += '\n'
+                        for i in range(n_reps):
+                            new_line_sim = str(i + 1) + ',' + new_line_base[:-1]
+                            for region in ['WS', 'FR', 'CDR']:
+                                for mutability_model in ['S5F','uniform','CP']:
 
-                        output_file_sim.write(new_line_sim)
+                                    total_change = S5F_changes[simulation_type][mutability_model][region]['total'][i]
+                                    syn_change = S5F_changes[simulation_type][mutability_model][region]['syn'][i]
+                                    nonsyn_change = S5F_changes[simulation_type][mutability_model][region]['nonsyn'][i]
 
+                                    new_line_sim += ',' + str(total_change) + ',' + str(syn_change) + ',' + \
+                                                    str(nonsyn_change)
+                            new_line_sim += '\n'
+
+                            results_file.write(new_line_sim)
 
 if(__name__ == "__main__"):
     status = main(sys.argv)

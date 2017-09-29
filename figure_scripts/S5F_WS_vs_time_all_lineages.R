@@ -4,6 +4,9 @@ library('coda')
 source('ggplot_parameters.R')
 
 points_file_path <- '../results/mutability_vs_time/observed_lineages/CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv'
+
+
+
 regressions_file_path <- '../results/mutability_vs_time/observed_lineages/CH103_constant/CH103_con_run1a_mutability_vs_time_correlations.csv'
 
 points_dataframe <- read.csv(points_file_path)
@@ -24,25 +27,38 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
   
   # Finding mean slope and mean intercept from the posterior distribution
   # (with a little workaround for the naming issue with 7M)
-  mean_intercept <- mean(regressions_dataframe[, paste('intercept_',
+  mean_intercept_all <- mean(regressions_dataframe[, paste('intercept_',
                                                        ifelse(metric=='X7M',substr(metric,2,3),metric),
                                                        '_',region,'_vs_node_time',sep='')])
   
-  slope_values <- regressions_dataframe[, paste('slope_',ifelse(metric=='X7M',substr(metric,2,3),metric)
+  #Mean intercept for regressions including observed nodes only
+  mean_intercept_obs <- mean(regressions_dataframe[, paste('intercept_',
+                                                       ifelse(metric=='X7M',substr(metric,2,3),metric),
+                                                       '_',region,'_vs_node_time_obs_only',sep='')])
+  
+  # Slope values for regressions including all nodes
+  slope_values_all <- regressions_dataframe[, paste('slope_',ifelse(metric=='X7M',substr(metric,2,3),metric)
                                                 ,'_',region,'_vs_node_time',sep='')]
+
+  # Slope values for regressions including observed nodes only
+  slope_values_obs <- regressions_dataframe[, paste('slope_',ifelse(metric=='X7M',substr(metric,2,3),metric)
+                                                         ,'_',region,'_vs_node_time_obs_only',sep='')]
   
-  mean_slope <- mean(slope_values)
+  # Slope values for obs. nodes only should all be the same. Stop if they are not
+  stopifnot(sd(slope_values_obs) == 0)
   
-  # Find 95% HPD interval for slope:
-  slope_HPD_limits <- HPDinterval(as.mcmc(slope_values), 
+  mean_slope_all <- mean(slope_values_all)
+  mean_slope_obs <- mean(slope_values_obs)
+  
+  # Find 95% HPD interval for slope (all nodes only):
+  slope_all_HPD_limits <- HPDinterval(as.mcmc(slope_values_all), 
                                   0.95)
   
-  # If slope HPD does not overlap zero, use solid line, else use dashed line
-  if(slope_HPD_limits[1] < 0 & slope_HPD_limits[2] > 0){
-    line_type <- 5
-  }else{
-    line_type <- 1
-  } 
+  # Use a solid line for the mean regression line including all nodes
+  line_type_all <- 1
+  
+  # Use a dashed line for the regression line including obs nodes only
+  line_type_obs <- 5
   
   # Plot:
   pl <- ggplot() + 
@@ -65,14 +81,20 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
     
   }
   
-  # Add "mean line" (line with mean slope and mean intercept)
-  pl <- pl + geom_abline(slope=mean_slope, 
-                         intercept=mean_intercept, 
-                         colour = 'red', linetype = line_type) 
+  # Add "mean line" (line with mean slope and mean intercept) for regressions including all nodes
+  pl <- pl + geom_abline(slope=mean_slope_all, 
+                         intercept=mean_intercept_all, 
+                         colour = 'red', linetype = line_type_all) 
+  
+  # Add mean line for regressions including observed nodes only
+  
+  pl <- pl + geom_abline(slope=mean_slope_obs, 
+                         intercept=mean_intercept_obs, 
+                         colour = 'red', linetype = line_type_obs) 
   
   subpl <-   subpl <- ggplot(data.frame(slope=slope_values), aes(x=slope)) +
     ylim <- c(0,)
-    geom_segment(aes(x = slope_HPD_limits[1], ))
+    geom_segment(aes(x = slope_all_HPD_limits[1], ))
   
   
   # Subplot with posterior distribution of slope
