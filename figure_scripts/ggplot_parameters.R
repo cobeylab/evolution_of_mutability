@@ -1,4 +1,11 @@
 # ================ DEFINING GGPLOT2 PARAMETERS ===============
+library(scales)
+# Function for making ggplot show axis labels in exponent notation
+# From http://stackoverflow.com/questions/10762287/how-can-i-format-axis-labels-with-exponents-with-ggplot2-and-scales
+scientific_10 <- function(x) {
+  parse(text=gsub("e", " %*% 10^", scientific_format()(x)))
+}
+
 title_size <- 7
 axis_title_size <- 11
 y_axis_text_size <- 11

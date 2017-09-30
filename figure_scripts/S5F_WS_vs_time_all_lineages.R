@@ -53,12 +53,18 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
   # Find 95% HPD interval for slope (all nodes only):
   slope_all_HPD_limits <- HPDinterval(as.mcmc(slope_values_all), 
                                   0.95)
+  slope_all_llim <- slope_all_HPD_limits[1]
+  slope_all_ulim <- slope_all_HPD_limits[2]
   
   # Use a solid line for the mean regression line including all nodes
   line_type_all <- 1
   
   # Use a dashed line for the regression line including obs nodes only
   line_type_obs <- 5
+  
+  # Maximum time
+  max_time <-  max(points_dataframe[points_dataframe$tree %in% tree_sample,
+                                    'node_time'])
   
   # Plot:
   pl <- ggplot() + 
@@ -67,7 +73,7 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
     ggplot_theme +
     # Internal: black (grey25), Terminal: blue ('royalblue1')
     scale_colour_manual(values=c("grey25",'royalblue1'))
-
+  
   for(tree in tree_sample){
     dataframe_subset <- points_dataframe[points_dataframe$tree == tree,]
     x <- dataframe_subset[,'node_time']
@@ -77,8 +83,6 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
     pl <- pl + geom_point(data=data.frame(x,y,factor), 
                           aes(x=x,y=y, colour = factor), size = 1,
                           alpha = 0.8)
-    
-    
   }
   
   # Add "mean line" (line with mean slope and mean intercept) for regressions including all nodes
@@ -92,31 +96,61 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
                          intercept=mean_intercept_obs, 
                          colour = 'red', linetype = line_type_obs) 
   
-  subpl <-   subpl <- ggplot(data.frame(slope=slope_values), aes(x=slope)) +
-    ylim <- c(0,)
-    geom_segment(aes(x = slope_all_HPD_limits[1], ))
-  
+  # Add mean slope and 95% Cred.I (for regressions involving all points)
+  pl <- pl + ggtitle(parse(text = paste('Slope == {',
+                                        scientific_10(mean_slope_all),
+                                        '} (',
+                                        scientific_10(slope_all_llim),
+                                        ',',
+                                        scientific_10(slope_all_ulim),
+                                        ')',
+                                        sep = ''
+                                        )
+                           )
+                     )
   
   # Subplot with posterior distribution of slope
-  subpl <- ggplot(data.frame(slope=slope_values), aes(x=slope)) + 
-    geom_density() + 
-    theme(axis.text=element_text(size=x_axis_text_size_subplot),
-          axis.title=element_text(size=axis_title_size_subplot, margin = margin(0,0,0,0)),
-          axis.line.x = element_line(colour="black", size = 0.3),
-          axis.line.y = element_line(colour="black",  size = 0.3),
-          plot.title = element_text(size=2)
-    ) + 
-    ylab("Density") +
-    xlab("Slope") +
-    expand_limits(x = 0) +
-    scale_y_continuous(expand = c(0,0)) +
-    geom_vline(xintercept = 0, linetype = 2)
-
   
+  # # Expand axis to fit inset plots
+  # pl <- pl + scale_x_continuous(limits = c(0, 1.25*max_time))
+  # 
+  # # Data-frame for shading region under density curve in inset plot
+  # shading_dataframe <- data.frame(slope_values_all)
+  # shading_dataframe <- with(density(shading_dataframe$slope_values_all,na.rm=T), data.frame(x, y))
+  # 
+  # subpl <- ggplot(data.frame(slope=slope_values_all), aes(x=slope)) + 
+  #   
+  #   # Added shaded region under slope posterior density curve
+  #   geom_area(data = shading_dataframe, 
+  #                     mapping = aes(y = ifelse(x>slope_all_llim & x< slope_all_ulim, y, 0),x), 
+  #                     fill = "snow2") +
+  #   # Add curve:
+  #   geom_density() + 
+  #   
+  #   # Add line indicating mean slope for all points:
+  #   geom_vline(xintercept = mean_slope_all, linetype = line_type_all, colour = 'red') +
+  #   
+  #   # Add line indicating slope for obs points only:
+  #   geom_vline(xintercept = mean_slope_obs, linetype = line_type_obs, colour = 'red') +
+  # 
+  #   theme(axis.text=element_text(size=x_axis_text_size_subplot),
+  #         axis.title=element_text(size=axis_title_size_subplot, margin = margin(0,0,0,0)),
+  #         axis.line.x = element_line(colour="black", size = 0.3),
+  #         axis.line.y = element_line(colour="black",  size = 0.3),
+  #         plot.title = element_text(size=2)
+  #   ) + 
+  #   ylab("Density") +
+  #   xlab("Slope") +
+  #   #expand_limits(x = 0) +
+  #   scale_x_continuous(labels = function(x) format(x, scientific=TRUE)) +
+  #   #scale_x_continuous(limits = c(-0.001,0.001)) +
+  #   scale_y_continuous(expand = c(0,0)) +
+  #   geom_vline(xintercept = 0, linetype = 2)
+  # 
+  # 
+  # return(list('main_plot' = pl, 'subplot' = subpl))
   return(pl)
 }
 
-# Master plotting function:
-master_plot_time <- function(pars){
-  do.call(base_plot_time, pars)
-}
+
+
