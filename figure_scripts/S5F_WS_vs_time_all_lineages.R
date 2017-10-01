@@ -1,16 +1,37 @@
 library('ggplot2')
 library('coda')
+library('cowplot')
 # Load ggplot parameters
 source('ggplot_parameters.R')
 
-points_file_path <- '../results/mutability_vs_time/observed_lineages/CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv'
+results_directory <- '../results/mutability_vs_time/observed_lineages/'
 
+# points_files <- list(CH103 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv', 
+#                      CH103L = 'CH103L_constant/CH103L_con_run1a_mutability_vs_time_points.csv', 
+#                      VRC01_13 = 'VRC01_13_logistic/VRC01_13_log_run1a_mutability_vs_time_points.csv',
+#                      VRC01_01 = 'VRC01_01_logistic/VRC01_01_log_run1a_mutability_vs_time_points.csv',
+#                      VRC01_19 = 'VRC01_19_logistic/VRC01_19_log_run1a_mutability_vs_time_points.csv',
+#                      VRC26 = 'VRC26int_constant/VRC26int_con_run1a_mutability_vs_time_points.csv',
+#                      VRC26L = 'VRC26L_constant/VRC26L_con_run1a_mutability_vs_time_points.csv'
+#                   )
 
+points_files <- c(CH103 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv', 
+                  CH103L = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv', 
+                  VRC01_13 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
+                  VRC01_01 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
+                  VRC01_19 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
+                  VRC26 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
+                  VRC26L = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv')
 
-regressions_file_path <- '../results/mutability_vs_time/observed_lineages/CH103_constant/CH103_con_run1a_mutability_vs_time_correlations.csv'
+for(i in 1:length(points_files)){
+  points_files[i] <- paste(results_directory, points_files[i], sep = '')
+}
 
-points_dataframe <- read.csv(points_file_path)
-regressions_dataframe <- read.csv(regressions_file_path)
+regressions_files <- gsub('points','correlations', points_files) 
+
+points_dataframes_list <- lapply(points_files, FUN = read.csv, header = T)
+regressions_dataframes_list <- lapply(regressions_files, FUN = read.csv, header = T)
+
 
 # Function for generating the plot for each dataset
 base_plot <- function(points_dataframe, regressions_dataframe, metric, 
@@ -71,6 +92,8 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
     xlab(paste("Time at node (",time_units,')',sep='')) + 
     ylab(ylabel) +
     ggplot_theme +
+    theme(plot.title = element_text(size = 10),
+          plot.margin = margin(24,12,6,6,'pt')) +
     # Internal: black (grey25), Terminal: blue ('royalblue1')
     scale_colour_manual(values=c("grey25",'royalblue1'))
   
@@ -151,6 +174,21 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
   # return(list('main_plot' = pl, 'subplot' = subpl))
   return(pl)
 }
+plots_S5F <- mapply(FUN = base_plot, points_dataframes_list, regressions_dataframes_list,
+                    MoreArgs = list(metric = 'S5F', region = 'WS', theme_specs = ggplot_theme, time_units = 'weeks'),
+                    SIMPLIFY = FALSE
+)
 
+#plot_grid_labels <- c()
+#for(i in 1:length(plots_S5F)){
+#  plot_grid_labels <- c(plot_grid_labels, 
+#                        paste(LETTERS[i], ') ',names(plots_S5F)[i], sep = '')   
+#                        )
+#}
+plot_grid_labels <- gsub('_','-', names(plots_S5F))
+plot_grid_labels <- gsub('L', '(L)', plot_grid_labels)
 
+png('test.png', height = 3500, width = 3500, res = 300)
+plot_grid(plotlist = plots_S5F, labels = plot_grid_labels)
+dev.off()
 
