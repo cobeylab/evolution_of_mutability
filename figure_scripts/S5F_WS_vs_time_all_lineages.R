@@ -6,22 +6,14 @@ source('ggplot_parameters.R')
 
 results_directory <- '../results/mutability_vs_time/observed_lineages/'
 
-# points_files <- list(CH103 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv', 
-#                      CH103L = 'CH103L_constant/CH103L_con_run1a_mutability_vs_time_points.csv', 
-#                      VRC01_13 = 'VRC01_13_logistic/VRC01_13_log_run1a_mutability_vs_time_points.csv',
-#                      VRC01_01 = 'VRC01_01_logistic/VRC01_01_log_run1a_mutability_vs_time_points.csv',
-#                      VRC01_19 = 'VRC01_19_logistic/VRC01_19_log_run1a_mutability_vs_time_points.csv',
-#                      VRC26 = 'VRC26int_constant/VRC26int_con_run1a_mutability_vs_time_points.csv',
-#                      VRC26L = 'VRC26L_constant/VRC26L_con_run1a_mutability_vs_time_points.csv'
-#                   )
-
-points_files <- c(CH103 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv', 
-                  CH103L = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv', 
-                  VRC01_13 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
-                  VRC01_01 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
-                  VRC01_19 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
-                  VRC26 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
-                  VRC26L = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv')
+points_files <- c(CH103 = 'CH103_constant/CH103_con_run1a_mutability_vs_time_points.csv',
+                  CH103L = 'CH103L_constant/CH103L_con_run1a_mutability_vs_time_points.csv',
+                  VRC26 = 'VRC26int_constant/VRC26int_con_run1a_mutability_vs_time_points.csv',
+                  VRC26L = 'VRC26L_constant/VRC26L_con_run1a_mutability_vs_time_points.csv',
+                  VRC01_13 = 'VRC01_13_logistic/VRC01_13_log_run1a_mutability_vs_time_points.csv',
+                  VRC01_01 = 'VRC01_01_logistic/VRC01_01_log_run1a_mutability_vs_time_points.csv',
+                  VRC01_19 = 'VRC01_19_logistic/VRC01_19_log_run1a_mutability_vs_time_points.csv'
+)
 
 for(i in 1:length(points_files)){
   points_files[i] <- paste(results_directory, points_files[i], sep = '')
@@ -64,9 +56,6 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
   # Slope values for regressions including observed nodes only
   slope_values_obs <- regressions_dataframe[, paste('slope_',ifelse(metric=='X7M',substr(metric,2,3),metric)
                                                          ,'_',region,'_vs_node_time_obs_only',sep='')]
-  
-  # Slope values for obs. nodes only should all be the same. Stop if they are not
-  stopifnot(sd(slope_values_obs) == 0)
   
   mean_slope_all <- mean(slope_values_all)
   mean_slope_obs <- mean(slope_values_obs)
@@ -174,21 +163,41 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
   # return(list('main_plot' = pl, 'subplot' = subpl))
   return(pl)
 }
-plots_S5F <- mapply(FUN = base_plot, points_dataframes_list, regressions_dataframes_list,
-                    MoreArgs = list(metric = 'S5F', region = 'WS', theme_specs = ggplot_theme, time_units = 'weeks'),
+
+# Time units list (for mapply):
+time_units_list <- list(CH103 = 'weeks', CH103L = 'weeks', VRC26 = 'weeks', VRC26L = 'weeks',
+                        VRC01_13 ='months', VRC01_19 = 'months', VRC01_01 = 'months')
+
+# Labels for each clone
+plot_grid_labels <- c() 
+for(clone_name in names(points_dataframes_list)){
+  plot_grid_labels <- c(plot_grid_labels, switch(clone_name, 
+                                                 'CH103' = 'CH103 (H)',
+                                                 'CH103L' = 'CH103 (L)',
+                                                 'VRC26' = 'VRC26 (H)',
+                                                 'VRC26L' = 'VRC26 (L)',
+                                                 'VRC01_13' = 'VRC01-13 (H)',
+                                                 'VRC01_01' = 'VRC01-01 (H)',
+                                                 'VRC01_19' = 'VRC01-19 (H)'
+  ))
+}
+
+
+# For all metrics and regions:
+for(metric in c('S5F','HS','OHS','CS','X7M')){
+  for(region in c('WS','FR','CDR')){
+    plots <- mapply(FUN = base_plot, points_dataframe = points_dataframes_list, 
+                    regressions_dataframe = regressions_dataframes_list,
+                    time_units = time_units_list,
+                    MoreArgs = list(metric = metric, region = region, theme_specs = ggplot_theme),
                     SIMPLIFY = FALSE
-)
+                    )
+    
+    png(paste(ifelse(metric == 'X7M','7M',metric), '_', region, '_vs_time_all_lineages.png', sep  =''), 
+        height = 3500, width = 3500, res = 300)
+    plot_grid(plotlist = plots, labels = plot_grid_labels)
+    dev.off()
+  }
+}
 
-#plot_grid_labels <- c()
-#for(i in 1:length(plots_S5F)){
-#  plot_grid_labels <- c(plot_grid_labels, 
-#                        paste(LETTERS[i], ') ',names(plots_S5F)[i], sep = '')   
-#                        )
-#}
-plot_grid_labels <- gsub('_','-', names(plots_S5F))
-plot_grid_labels <- gsub('L', '(L)', plot_grid_labels)
-
-png('test.png', height = 3500, width = 3500, res = 300)
-plot_grid(plotlist = plots_S5F, labels = plot_grid_labels)
-dev.off()
 
