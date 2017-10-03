@@ -20,8 +20,8 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 # constants
 # Test sequence:
 
-test_sequence = "caggttcagctggtgcagtctggagct---gaggtgaagaagcctggggcctcagtgaaggtctcctgcaaggcttctggttacaccttt------------accagctatggtatcagctgggtgcgacaggcccctggacaagggcttgagtggatgggatggatcagcgcttac------aatggtaacacaaactatgcacagaagctccag---ggcagagtcaccatgaccacagacacatccacgagcacagcctacatggagctgaggagcctgagatctgacgacacggccgtgtattactgtgcgagaga"
-test_partition = [3, 29, 95]
+test_sequence = 'TCGGAGACCCTGTCCCTCACCTGCACTGTCTCTGGTGGCTCCATCAGTAGTTACTACTGGAGCTGGATCCGGCAGCCCCCAGGGAAGGGACTGGAGTGGATTGGGTATATCTATTACAGTGGGAGCACCAACTACAACCCCTCCCTCAAGAGTCGAGTCACCATATCAGTAGACACGTCCAAGAACCAGTTCTCCCTGAAGCTGAGCTCTGTGACCGCTGCGGACACGGCCGTGTATTACTGTGCGAGCGTGCCCAGGGGGCAGTTAGTCAATGCCTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCA'
+test_partition = [1, 34, 58, 109, 130, 244, 288]
 
 
 test_WRCH = 'TGCTCCCCTGCT'
@@ -189,7 +189,6 @@ def count_nonzero_7M(seq):
 
 # Functions for counting AID hotspots:
 
-
 def count_WRCH(seq):
     n_WRCH = 0
     # For each nucleotide, except the first two and the last one...
@@ -274,7 +273,6 @@ def count_trinucleotide_CS_noncoding(seq):
     
 
 # Function for computing overlapping hotspots (Wei et al. 2015 PNAS):
-# The brute-force approach was just inertia, could use regex.
 def count_OHS(seq):
     n_OHS = 0
     # For each nucleotide, except the first two and the last one:
@@ -284,8 +282,7 @@ def count_OHS(seq):
     return n_OHS
     
 
-# Main function:
-
+# Main functions:
 def seq_mutability(seq, partition_points=None):
     """Calculates several mutability metrics for a specified set of contiguous partitions in a DNA sequence (seq). The partitions are specified by argument partition_points. Each element of the list partition_points specifies the position in the sequence (NOT the Python index) where a partition begins. The last element indicates the last position of the last partition (in case the user does not want to cover the entire sequence). If partition_points is set to 'None', the whole sequence is treated as a single partition. Deals with gaps.
     """
@@ -429,43 +426,41 @@ def seq_mutability(seq, partition_points=None):
     
     
 def aggregated_mutability(seq, partition_points):
-    '''Calls seq_mutability and aggregates resultsinto FRs (partitions 1,3,5) vs CDRs (partitions 2,4,6)
+    '''Calls seq_mutability and aggregates results into FRs (partitions 1,3,5) vs CDRs (partitions 2,4,6)
        Hotspots, coldspots, polymerase hotspots, overlapping HS and non-zero 7Ms are summed, others are averaged weighted by the length of each partition"
+
+        >>> aggregated_mutability(seq = 'TCGGAGACCCTGTCCCTCACCTGCACTGTCTCTGGTGGCTCCATCAGTAGTTACTACTGGAGCTGGATCCGGCAGCCCCCAGGGAAGGGACTGGAGTGGATTGGGTATATCTATTACAGTGGGAGCACCAACTACAACCCCTCCCTCAAGAGTCGAGTCACCATATCAGTAGACACGTCCAAGAACCAGTTCTCCCTGAAGCTGAGCTCTGTGACCGCTGCGGACACGGCCGTGTATTACTGTGCGAGCGTGCCCAGGGGGCAGTTAGTCAATGCCTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCA', partition_points = [1, 34, 58, 109, 130, 244, 288])
+        {'FR_mutability': {'C_fraction': 0.30808080808080807, 'POLHS': 23, 'HS': 19, 'n_nonzero_7M': 195, 'mean_S5F': 0.8343007913008704, 'CS': 65, 'mean_7M': 1.0339051547200506, 'OHS': 3}, 'CDR_mutability': {'C_fraction': 0.25555555555555554, 'POLHS': 23, 'HS': 14, 'n_nonzero_7M': 90, 'mean_S5F': 1.121063501136274, 'CS': 24, 'mean_7M': 1.2096232738333335, 'OHS': 0}}
     '''
     mutability = seq_mutability(seq, partition_points)
-    
-    length_FR1, length_CDR1,length_FR2, length_CDR2, length_FR3, length_CDR3 = mutability[0]
 
-    weight_FR1 = length_FR1 / float(length_FR1 + length_FR2 + length_FR3)
-    weight_FR2 = length_FR2 / float(length_FR1 + length_FR2 + length_FR3)
-    weight_FR3 = length_FR3 / float(length_FR1 + length_FR2 + length_FR3)
+    # Dictionary with lengths of each region
+    lengths = {'FR':[mutability[0][i] for i in [0,2,4]],
+               'CDR':[mutability[0][i] for i in [1,3,5]]
+               }
 
-    weight_CDR1 = length_CDR1 / float(length_CDR1 + length_CDR2 + length_CDR3)
-    weight_CDR2 = length_CDR2 / float(length_CDR1 + length_CDR2 + length_CDR3)
-    weight_CDR3 = length_CDR3 / float(length_CDR1 + length_CDR2 + length_CDR3)
+    # Get indices for FR or CDR results in mutability[i] (note mutability[0] gives region lengths)
+    indices = {'FR': [1,3,5], 'CDR': [2,4,6]}
 
-    combined_FR_S5F = mutability[1]['mean_S5F'] * weight_FR1 + mutability[3]['mean_S5F'] * weight_FR2 + mutability[5]['mean_S5F'] * weight_FR3
-    combined_FR_7M = mutability[1]['mean_7M'] * weight_FR1 + mutability[3]['mean_7M'] * weight_FR2 + mutability[5]['mean_7M'] * weight_FR3
-    combined_FR_nonzero_7M = mutability[1]['n_nonzero_7M'] + mutability[3]['n_nonzero_7M'] + mutability[5]['n_nonzero_7M']
-    combined_FR_AIDHS = mutability[1]['HS'] + mutability[3]['HS'] + mutability[5]['HS']
-    combined_FR_POLHS = mutability[1]['POLHS'] + mutability[3]['POLHS'] + mutability[5]['POLHS'] 
-    combined_FR_C_fraction = mutability[1]['C_fraction'] * weight_FR1 + mutability[3]['C_fraction'] * weight_FR2 + mutability[5]['C_fraction'] * weight_FR3
-    combined_FR_AIDCS = mutability[1]['CS'] + mutability[3]['CS'] + mutability[5]['CS']
-    combined_FR_OHS = mutability[1]['OHS'] + mutability[3]['OHS'] + mutability[5]['OHS']
+    results = {'FR_mutability' : {}, 'CDR_mutability' : {}}
 
-    combined_CDR_S5F = mutability[2]['mean_S5F'] * weight_CDR1 + mutability[4]['mean_S5F'] * weight_CDR2 + mutability[6]['mean_S5F'] * weight_CDR3
-    combined_CDR_7M = mutability[2]['mean_7M'] * weight_CDR1 + mutability[4]['mean_7M'] * weight_CDR2 + mutability[6]['mean_7M'] * weight_CDR3
-    combined_CDR_nonzero_7M = mutability[2]['n_nonzero_7M'] + mutability[4]['n_nonzero_7M'] + mutability[6]['n_nonzero_7M']
-    combined_CDR_AIDHS = mutability[2]['HS'] + mutability[4]['HS'] + mutability[6]['HS']
-    combined_CDR_POLHS = mutability[2]['POLHS'] + mutability[4]['POLHS'] + mutability[6]['POLHS']
-    combined_CDR_C_fraction = mutability[2]['C_fraction'] * weight_CDR1 + mutability[4]['C_fraction'] * weight_CDR2 + mutability[6]['C_fraction'] * weight_CDR3
-    combined_CDR_AIDCS = mutability[2]['CS'] + mutability[4]['CS'] + mutability[6]['CS']
-    combined_CDR_OHS = mutability[2]['OHS'] + mutability[4]['OHS'] + mutability[6]['OHS']
-    
-    return {'FR_mutability':{'mean_S5F':combined_FR_S5F, 'mean_7M':combined_FR_7M, 'n_nonzero_7M':combined_FR_nonzero_7M,
-                              'HS':combined_FR_AIDHS, 'POLHS':combined_FR_POLHS, 'C_fraction':combined_FR_C_fraction, 
-                              'CS':combined_FR_AIDCS, 'OHS':combined_FR_OHS},
-            'CDR_mutability':{'mean_S5F':combined_CDR_S5F, 'mean_7M':combined_CDR_7M, 'n_nonzero_7M':combined_CDR_nonzero_7M,
-                              'HS':combined_CDR_AIDHS, 'POLHS':combined_CDR_POLHS, 'C_fraction':combined_CDR_C_fraction, 
-                              'CS':combined_CDR_AIDCS, 'OHS':combined_CDR_OHS}
-            }
+    for metric in mutability[1].keys():
+        for region in ['FR', 'CDR']:
+            region_lengths = lengths[region]
+            mutability_values = [mutability[i][metric] for i in indices[region]]
+
+            # If metric is number of hotspots, coldspots, pol hotspots, OHS or non-zero 7ms, sum across regions
+            if metric in ['HS','CS','n_nonzero_7M','POLHS','OHS']:
+                aggregated_value = sum(mutability_values)
+
+            # Else, do a weighted average
+            else:
+                # Find weight of each FR (or each CDR) relative to all FRs (or all CDRs)
+                region_weight = [float(length) / sum(region_lengths) for length in region_lengths]
+
+                aggregated_value = [mutability_values[i] * region_weight[i] for i in range(len(mutability_values))]
+                aggregated_value = sum(aggregated_value)
+
+            results[region + '_mutability'][metric] = aggregated_value
+
+    return {'FR_mutability': results['FR_mutability'], 'CDR_mutability': results['CDR_mutability']}
