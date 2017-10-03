@@ -1,5 +1,5 @@
 #!/bin/bash
-for scenario in {1,2a,2b,2c,2d,2e,3a,3b,3c,3d}
+for scenario in {1,2a,2b,2c,2d,2e,3a,3b,3c,3d,4a,4b,4c,4d,4e}
 do
    for replicate in {1..4}
    do

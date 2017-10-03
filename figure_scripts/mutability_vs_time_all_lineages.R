@@ -195,7 +195,7 @@ for(metric in c('S5F','HS','OHS','CS','X7M')){
     
     png(paste(ifelse(metric == 'X7M','7M',metric), '_', region, '_vs_time_all_lineages.png', sep  =''), 
         height = 3500, width = 3500, res = 300)
-    plot_grid(plotlist = plots, labels = plot_grid_labels)
+    plot(plot_grid(plotlist = plots, labels = plot_grid_labels))
     dev.off()
   }
 }
