@@ -7,7 +7,6 @@ __author__ = "Marcos Vieira (mvieira@uchicago.edu)"
 
 
 # imports
-
 import csv
 import os
 import itertools
@@ -78,6 +77,7 @@ for row in csvread:
 
 def compute_mean_S5F(seq):
     mean_S5F = 0
+    mean_log_S5F = 0
 
     # Set of ambiguities:
     ambiguities = {'Y', 'R', 'W', 'S', 'K', 'M', 'D', 'V', 'H', 'B', 'X', 'N'}
@@ -90,6 +90,7 @@ def compute_mean_S5F(seq):
         # If it doesn't, find S5F from dictionary:
         if len(ambiguities.intersection(set(motif))) == 0:
             mean_S5F = mean_S5F + S5F[motif]
+            mean_log_S5F = mean_log_S5F + np.log(S5F[motif])
 
         else:
             # If it does, find the ambiguous positions:
@@ -110,19 +111,41 @@ def compute_mean_S5F(seq):
             assert len(replacements) == n_replacements
 
             S5F_values = []
+            S5F_log_values = []
             for replacement in replacements:
                 possible_motif = list(motif)
                 for i in range(len(replacement)):
                     possible_motif[positions[i]] = replacement[i]
                 possible_motif = ''.join(possible_motif)
                 S5F_values.append(S5F[possible_motif])
+                S5F_log_values.append(np.log(S5F[possible_motif]))
 
             mean_value = float(sum(S5F_values)) / len(S5F_values)
+            mean_log_value = float(sum(S5F_log_values)) / len(S5F_log_values)
+
             mean_S5F = mean_S5F + mean_value
+            mean_log_S5F = mean_log_S5F + mean_log_value
 
     mean_S5F = mean_S5F / float(len(seq) - 4)
-    return mean_S5F
+    mean_log_S5F = mean_log_S5F / float(len(seq) - 4)
 
+    # Compute geometric mean by exponentiating mean log
+    geom_mean_S5F = np.exp(mean_log_S5F)
+    return {'mean_S5F': mean_S5F, 'geom_mean_S5F': geom_mean_S5F}
+
+# For a single motif, mean and geometric mean should be the same:
+assert(compute_mean_S5F('CATAG')['mean_S5F'] == compute_mean_S5F('CATAG')['geom_mean_S5F'])
+
+
+
+# Manual calculation for an example sequence
+test_sum_log = np.log(S5F['AAGAA']) + np.log(S5F['AGAAA']) + np.log(S5F['GAAAA']) + np.log(S5F['AAAAG']) + \
+               np.log(S5F['AAAGA']) + np.log(S5F['AAGAA'])
+test_mean_log = test_sum_log / 6
+test_geom_mean = np.exp(test_mean_log)
+
+# Test that sequence computes the correct geometric mean:
+assert(compute_mean_S5F('AAGAAAAGAA')['geom_mean_S5F'] == test_geom_mean)
 
 # Function for computing mean 7mer score:
 
@@ -374,7 +397,11 @@ def seq_mutability(seq, partition_points=None):
         # Calc. mutability metrics, appending neighbors where necessary:
         mean_S5F = compute_mean_S5F(l_neighbors[1] + l_neighbors[2] +
                                     partition +
-                                    r_neighbors[0] + r_neighbors[1])
+                                    r_neighbors[0] + r_neighbors[1])['mean_S5F']
+
+        geom_mean_S5F = compute_mean_S5F(l_neighbors[1] + l_neighbors[2] +
+                                    partition +
+                                    r_neighbors[0] + r_neighbors[1])['geom_mean_S5F']
 
         mean_7M = compute_mean_7M(l_neighbors[0] + l_neighbors[1] + l_neighbors[2] +
                                   partition +
@@ -419,7 +446,7 @@ def seq_mutability(seq, partition_points=None):
         partition_results = [mean_S5F, mean_7M, n_nonzero_7M, n_AIDHS, n_POLHS, C_fraction, n_AIDCS, n_OHS]
         partition_results = {'mean_S5F':mean_S5F, 'mean_7M':mean_7M, 'n_nonzero_7M':n_nonzero_7M,
                              'HS':n_AIDHS, 'POLHS':n_POLHS, 'C_fraction':C_fraction, 'CS':n_AIDCS,
-                             'OHS':n_OHS}
+                             'OHS':n_OHS, 'geom_mean_S5F' : geom_mean_S5F}
 
         results_lists.append(partition_results)
     return results_lists
@@ -430,7 +457,7 @@ def aggregated_mutability(seq, partition_points):
        Hotspots, coldspots, polymerase hotspots, overlapping HS and non-zero 7Ms are summed, others are averaged weighted by the length of each partition"
 
         >>> aggregated_mutability(seq = 'TCGGAGACCCTGTCCCTCACCTGCACTGTCTCTGGTGGCTCCATCAGTAGTTACTACTGGAGCTGGATCCGGCAGCCCCCAGGGAAGGGACTGGAGTGGATTGGGTATATCTATTACAGTGGGAGCACCAACTACAACCCCTCCCTCAAGAGTCGAGTCACCATATCAGTAGACACGTCCAAGAACCAGTTCTCCCTGAAGCTGAGCTCTGTGACCGCTGCGGACACGGCCGTGTATTACTGTGCGAGCGTGCCCAGGGGGCAGTTAGTCAATGCCTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCA', partition_points = [1, 34, 58, 109, 130, 244, 288])
-        {'FR_mutability': {'C_fraction': 0.30808080808080807, 'POLHS': 23, 'HS': 19, 'n_nonzero_7M': 195, 'mean_S5F': 0.8343007913008704, 'CS': 65, 'mean_7M': 1.0339051547200506, 'OHS': 3}, 'CDR_mutability': {'C_fraction': 0.25555555555555554, 'POLHS': 23, 'HS': 14, 'n_nonzero_7M': 90, 'mean_S5F': 1.121063501136274, 'CS': 24, 'mean_7M': 1.2096232738333335, 'OHS': 0}}
+        {'FR_mutability': {'C_fraction': 0.30808080808080807, 'POLHS': 23, 'HS': 19, 'geom_mean_S5F': 0.56619255059234308, 'n_nonzero_7M': 195, 'mean_S5F': 0.8343007913008704, 'CS': 65, 'mean_7M': 1.0339051547200506, 'OHS': 3}, 'CDR_mutability': {'C_fraction': 0.25555555555555554, 'POLHS': 23, 'HS': 14, 'geom_mean_S5F': 0.72673261557134272, 'n_nonzero_7M': 90, 'mean_S5F': 1.121063501136274, 'CS': 24, 'mean_7M': 1.2096232738333335, 'OHS': 0}}
     '''
     mutability = seq_mutability(seq, partition_points)
 
@@ -454,12 +481,23 @@ def aggregated_mutability(seq, partition_points):
                 aggregated_value = sum(mutability_values)
 
             # Else, do a weighted average
-            else:
+            # For all metrics except the geometric mean of S5F scores:
+            elif metric != 'geom_mean_S5F':
                 # Find weight of each FR (or each CDR) relative to all FRs (or all CDRs)
                 region_weight = [float(length) / sum(region_lengths) for length in region_lengths]
 
                 aggregated_value = [mutability_values[i] * region_weight[i] for i in range(len(mutability_values))]
                 aggregated_value = sum(aggregated_value)
+
+            # If metric is the geometric mean of S5F:
+            elif metric == 'geom_mean_S5F':
+                # Find weight of each FR (or each CDR) relative to all FRs (or all CDRs)
+                region_weight = [float(length) / sum(region_lengths) for length in region_lengths]
+
+                # Get aggregated geom. mean as the product of geom means for each region to the power of their weight
+
+                aggregated_value = [mutability_values[i] ** region_weight[i] for i in range(len(mutability_values))]
+                aggregated_value = np.prod(aggregated_value)
 
             results[region + '_mutability'][metric] = aggregated_value
 
