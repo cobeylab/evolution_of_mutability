@@ -1,7 +1,6 @@
  #!/usr/bin/python
 
 """Takes each tree from a NEXUS file (output from BEAST). For each node on each tree, finds sequence mutability at that node based on the inferred ancestral sequence (or observed sequence, for the tips). Computes pair-wise linear regression statistics between mutability (as a response variable) and the distance and time between each the node and the root of the tree (predictors).
- This is a "by-node" analysis, as opposed to the "by-branch" analysis in "mutability_correlations"
 """
 
 import sys
@@ -140,7 +139,7 @@ def main(argv):
         points_file_header = 'tree,node,node_is_tip'
 
         for region in ['WS', 'FR', 'CDR']:
-            for metric in ['S5F', '7M', 'HS', 'CS', 'OHS']:
+            for metric in ['S5F', '7M', 'HS', 'CS', 'OHS', 'geomS5F']:
                 points_file_header += ',' + metric + '_' + region
 
         points_file_header += ',node_distance,node_distance_RC,node_time'
@@ -200,13 +199,13 @@ def main(argv):
                 list_node_type = []
 
                 # Lists with node mutability in whole sequence...
-                list_S5F_WS, list_7M_WS, list_HS_WS, list_CS_WS, list_OHS_WS = [], [], [], [], []
+                list_S5F_WS, list_7M_WS, list_HS_WS, list_CS_WS, list_OHS_WS, list_geomS5F_WS = [], [], [], [], [],[]
 
                 # ...in frameworks...
-                list_S5F_FR, list_7M_FR, list_HS_FR, list_CS_FR, list_OHS_FR = [], [], [], [], []
+                list_S5F_FR, list_7M_FR, list_HS_FR, list_CS_FR, list_OHS_FR, list_geomS5F_FR = [], [], [], [], [], []
 
                 # ...in CDRs...
-                list_S5F_CDR, list_7M_CDR, list_HS_CDR, list_CS_CDR, list_OHS_CDR = [], [], [], [], []
+                list_S5F_CDR, list_7M_CDR, list_HS_CDR, list_CS_CDR, list_OHS_CDR, list_geomS5F_CDR = [], [], [], [], [],[]
 
                 # Get values for each node
                 for node in tree.nodes():
@@ -286,18 +285,22 @@ def main(argv):
                         list_HS_WS.append(node_mutability_WS[1]['HS'])
                         list_CS_WS.append(node_mutability_WS[1]['CS'])
                         list_OHS_WS.append(node_mutability_WS[1]['OHS'])
+                        list_geomS5F_WS.append(node_mutability_WS[1]['geom_mean_S5F'])
 
                         list_S5F_FR.append(node_mutability_aggregated['FR_mutability']['mean_S5F'])
                         list_7M_FR.append(node_mutability_aggregated['FR_mutability']['mean_7M'])
                         list_HS_FR.append(node_mutability_aggregated['FR_mutability']['HS'])
                         list_CS_FR.append(node_mutability_aggregated['FR_mutability']['CS'])
                         list_OHS_FR.append(node_mutability_aggregated['FR_mutability']['OHS'])
+                        list_geomS5F_FR.append(node_mutability_aggregated['FR_mutability']['geom_mean_S5F'])
+
 
                         list_S5F_CDR.append(node_mutability_aggregated['CDR_mutability']['mean_S5F'])
                         list_7M_CDR.append(node_mutability_aggregated['CDR_mutability']['mean_7M'])
                         list_HS_CDR.append(node_mutability_aggregated['CDR_mutability']['HS'])
                         list_CS_CDR.append(node_mutability_aggregated['CDR_mutability']['CS'])
                         list_OHS_CDR.append(node_mutability_aggregated['CDR_mutability']['OHS'])
+                        list_geomS5F_CDR.append(node_mutability_aggregated['CDR_mutability']['geom_mean_S5F'])
 
                         # ------------------------ Write new line of the points output file ----------------------------
 
@@ -306,12 +309,12 @@ def main(argv):
                         points_line = str(state) + ',' +node_number + ',' + str(node.is_leaf()*1)
 
                         # Add whole-sequence mutability
-                        for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
+                        for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS', 'geom_mean_S5F']:
                             points_line += ',' + str(node_mutability_WS[1][metric])
 
                         # Add FR and CDR mutability
                         for region in ['FR', 'CDR']:
-                            for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
+                            for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS', 'geom_mean_S5F']:
                                 points_line += ',' + str(node_mutability_aggregated[region + '_mutability'][metric])
 
                         # Add distance, distance_RC and time
@@ -324,9 +327,9 @@ def main(argv):
 
 
                 # Dictionary with all lists (response variables and predictors):
-                lists = {"S5F_WS": list_S5F_WS, "7M_WS": list_7M_WS, "HS_WS": list_HS_WS, "CS_WS": list_CS_WS, "OHS_WS": list_OHS_WS,
-                         "S5F_FR": list_S5F_FR, "7M_FR": list_7M_FR, "HS_FR": list_HS_FR, "CS_FR": list_CS_FR, "OHS_FR": list_OHS_FR,
-                         "S5F_CDR": list_S5F_CDR, "7M_CDR": list_7M_CDR, "HS_CDR": list_HS_CDR, "CS_CDR": list_CS_CDR, "OHS_CDR": list_OHS_CDR,
+                lists = {"S5F_WS": list_S5F_WS, "7M_WS": list_7M_WS, "HS_WS": list_HS_WS, "CS_WS": list_CS_WS, "OHS_WS": list_OHS_WS, "geomS5F_WS": list_geomS5F_WS,
+                         "S5F_FR": list_S5F_FR, "7M_FR": list_7M_FR, "HS_FR": list_HS_FR, "CS_FR": list_CS_FR, "OHS_FR": list_OHS_FR, "geomS5F_FR": list_geomS5F_FR,
+                         "S5F_CDR": list_S5F_CDR, "7M_CDR": list_7M_CDR, "HS_CDR": list_HS_CDR, "CS_CDR": list_CS_CDR, "OHS_CDR": list_OHS_CDR, "geomS5F_CDR": list_geomS5F_CDR,
                          "node_time": list_times, "node_distance": list_distances, "node_distance_RC": list_distances_RC,
                          "node_type": list_node_type
                         }
@@ -342,7 +345,7 @@ def main(argv):
 
                 # Compute relationship between mutability and time (slope, intercept, r [correlation coefficient])
                 # First argument of linregress is x, second is y. Slope, intercept and r are elements 0, 1 and 2 from output list
-                for metric in ['S5F', '7M', 'HS', 'CS', 'OHS']:
+                for metric in ['S5F', '7M', 'HS', 'CS', 'OHS','geomS5F']:
                     for region in ['WS','FR','CDR']:
 
                         # Relationship for all nodes

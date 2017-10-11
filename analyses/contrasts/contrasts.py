@@ -6,6 +6,7 @@ import sys
 import re
 from dendropy import Tree
 from numpy import random
+from numpy import log
 
 # Import mutability functions and partition points from analyses/mutability folder
 sys.path.insert(0, '../mutability/')
@@ -91,11 +92,15 @@ def main(argv):
         # Write header to mutability contrasts output file:
         mutability_output_header = 'tree,parent,child,branch_is_terminal,branch_in_trunk,n_descendants_last_time'
         for region in ['WS', 'FR', 'CDR']:
-            for metric in ['S5F','7M','HS','CS','OHS']:
-                mutability_output_header += ',' + metric + '_' + region + '_contrast'
+            for metric in ['S5F','7M','HS','CS','OHS','geom_S5F']:
+                # For the g. mean of S5F, compute the diff in mean log S5F, instead of the diff in geometric means
+                if metric == 'geom_S5F':
+                    mutability_output_header += ',log_S5F' + '_' + region + '_contrast'
+                else:
+                    mutability_output_header += ',' + metric + '_' + region + '_contrast'
 
         for region in ['WS', 'FR', 'CDR']:
-            for metric in ['S5F','7M','HS','CS','OHS']:
+            for metric in ['S5F','7M','HS','CS','OHS','geom_S5F']:
                 mutability_output_header += ',' + metric + '_' + region + '_parent'
 
         # For S5F only, changes partitioned into syn. and non-syn.
@@ -306,31 +311,46 @@ def main(argv):
                             mutability_line += str(node.is_leaf() * 1) + ',' + str(branch_in_trunk) + ','
                             mutability_line += str(n_descendants_last_time) + ','
 
-                            # The following loops must be in this exact order
+                            # The following loops must be in this exact order to match the header
 
                             # Add whole-sequence mutability contrasts:
-                            for metric in ['mean_S5F','mean_7M','HS','CS','OHS']:
+                            for metric in ['mean_S5F','mean_7M','HS','CS','OHS', 'geom_mean_S5F']:
+
                                 node_mutability = node_mutability_WS[1][metric]
                                 parent_mutability = parent_node_mutability_WS[1][metric]
+
+                                # For the g. mean of S5F, compute diff in mean logs instead of diff in g. means
+                                if metric == 'geom_mean_S5F':
+                                    # Get mean logs by taking the log of the geometric means:
+                                    node_mutability = log(node_mutability)
+                                    parent_mutability = log(parent_mutability)
+
                                 contrast = node_mutability - parent_mutability
                                 mutability_line += str(contrast) + ','
 
                             # Add FR and CDR aggregated mutability contrasts:
                             for region in ['FR','CDR']:
-                                for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
+                                for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS','geom_mean_S5F']:
                                     node_mutability = node_mutability_aggregated[region + '_mutability'][metric]
                                     parent_mutability = parent_node_mutability_aggregated[region + '_mutability'][metric]
+
+                                    # For the g. mean of S5F, compute diff in mean logs instead of diff in g. means
+                                    if metric == 'geom_mean_S5F':
+                                        # Get mean logs by taking the log of the geometric means:
+                                        node_mutability = log(node_mutability)
+                                        parent_mutability = log(parent_mutability)
+
                                     contrast = node_mutability - parent_mutability
                                     mutability_line += str(contrast) + ','
 
                             # Add parent whole-sequence mutability
-                            for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
+                            for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS','geom_mean_S5F']:
                                 parent_mutability = parent_node_mutability_WS[1][metric]
                                 mutability_line += str(parent_mutability) + ','
 
                             # Add parent FR and CDR aggregated mutability:
                             for region in ['FR','CDR']:
-                                for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
+                                for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS','geom_mean_S5F']:
                                     parent_mutability = parent_node_mutability_aggregated[region + '_mutability'][metric]
                                     mutability_line += str(parent_mutability) + ','
 

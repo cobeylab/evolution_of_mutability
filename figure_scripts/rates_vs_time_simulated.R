@@ -113,9 +113,9 @@ plot_list_N_rate <- c()
 
 
 
-for(scenario in c('2c','2d','2e','3a','3b','3c','4a','4b','4c','4d')){
+for(scenario in c('2c','2d','2e','3a','3b','3c','4a','4b','4c','4d','4e')){
   file_path <- paste('../results/rates_vs_time/simulated_alignments/scenario',
-                     scenario, '_rep2/scenario', scenario, '_rep2_rates_vs_time_correlations.csv', sep = '')
+                     scenario, '_rep4/scenario', scenario, '_rep4_rates_vs_time_correlations.csv', sep = '')
   
   results_dataframe <- read.table(file_path, header = T, sep = ',')
   
@@ -124,6 +124,18 @@ for(scenario in c('2c','2d','2e','3a','3b','3c','4a','4b','4c','4d')){
   plot_list_N_rate[[scenario]] <- base_plot_time(results_dataframe, 'N_rate')
   
 }
+
+# Plot for uniform mutability simulations obtained under different r, K, s:
+uniform_mutability_plot_newpars <- plot_grid(plot_list_total_rate_RC[['4c']],plot_list_S_rate[['4c']], plot_list_N_rate[['4c']], 
+                                             plot_list_total_rate_RC[['4d']],plot_list_S_rate[['4d']], plot_list_N_rate[['4d']],
+                                             plot_list_total_rate_RC[['4e']],plot_list_S_rate[['4e']], plot_list_N_rate[['4e']],
+                                             labels = c('', '30% simulated decrease','','', '40% simulated decrease','','', '50% simulated decrease','')
+)
+save_plot("rates_vs_time_uniform_newpars.pdf", uniform_mutability_plot_newpars,
+          base_height = 10, base_width = 11
+)
+
+
 
 # Plot with results from uniform mutability simulations, w/ 30 (2c), 40 (2d) and 50% (2e) decrease in total rate
 
@@ -135,16 +147,6 @@ uniform_mutability_plot <- plot_grid(plot_list_total_rate_RC[['2c']],plot_list_S
           )
 
 save_plot("rates_vs_time_uniform.pdf", uniform_mutability_plot,
-          base_height = 10, base_width = 11
-)
-
-# Plot for uniform mutability simulations obtained under different r, K, s:
-uniform_mutability_plot_newpars <- plot_grid(plot_list_total_rate_RC[['4c']],plot_list_S_rate[['4c']], plot_list_N_rate[['4c']], 
-                                     plot_list_total_rate_RC[['4d']],plot_list_S_rate[['4d']], plot_list_N_rate[['4d']],
-                                     plot_list_total_rate_RC[['4e']],plot_list_S_rate[['4e']], plot_list_N_rate[['4e']],
-                                     labels = c('', '30% simulated decrease','','', '40% simulated decrease','','', '50% simulated decrease','')
-)
-save_plot("rates_vs_time_uniform_newpars.pdf", uniform_mutability_plot,
           base_height = 10, base_width = 11
 )
 
