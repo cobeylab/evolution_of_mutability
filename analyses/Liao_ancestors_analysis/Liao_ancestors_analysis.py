@@ -20,7 +20,7 @@ with open('Liao_experimentally_characterized_seqs.fasta', 'rU') as fasta_file:
     for record in SeqIO.parse(fasta_file, "fasta"):
         ancestors[record.id] = str(record.seq)
 
-# Replace '-' with state at UCA
+# Sequences have '-' where nucleotide is the same as in UCA. Replace '-' with state at UCA.
 for anc in ancestors.keys():
     seq = ancestors[anc]
     seq = list(seq)

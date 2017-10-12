@@ -313,7 +313,7 @@ def main(argv):
                     # --------------------------------- Annotate mutability on node ----------------------------------------
 
                     # Add whole-sequence mutability:
-                    for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
+                    for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS', 'geom_mean_S5F']:
                         node_mutability = node_mutability_WS[1][metric]
                         parent_mutability = parent_node_mutability_WS[1][metric]
                         contrast = node_mutability - parent_mutability
@@ -334,7 +334,7 @@ def main(argv):
 
                     # Add FR and CDR aggregated mutability:
                     for region in ['FR', 'CDR']:
-                        for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS']:
+                        for metric in ['mean_S5F', 'mean_7M', 'HS', 'CS', 'OHS','geom_mean_S5F']:
                             node_mutability = node_mutability_aggregated[region + '_mutability'][metric]
                             parent_mutability = parent_node_mutability_aggregated[region + '_mutability'][metric]
                             contrast = node_mutability - parent_mutability

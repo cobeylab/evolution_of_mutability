@@ -33,7 +33,8 @@ base_plot <- function(points_dataframe, regressions_dataframe, metric,
                    X7M = 'Mean 7-mer mutability',
                    HS = 'Number of hotspots',
                    CS = 'Number of coldspots',
-                   OHS = 'Number of overlapping hotspots')
+                   OHS = 'Number of overlapping hotspots',
+                   geomS5F = 'Geometric mean S5F mutability')
   ylabel <- paste(ylabel, ' (', region, ')', sep = '')
   
   tree_sample <- sample(unique(points_dataframe$tree), tree_sample_size, replace = F)
@@ -184,7 +185,7 @@ for(clone_name in names(points_dataframes_list)){
 
 
 # For all metrics and regions:
-for(metric in c('S5F','HS','OHS','CS','X7M')){
+for(metric in c('S5F','HS','OHS','CS','X7M','geomS5F')){
   for(region in c('WS','FR','CDR')){
     plots <- mapply(FUN = base_plot, points_dataframe = points_dataframes_list, 
                     regressions_dataframe = regressions_dataframes_list,

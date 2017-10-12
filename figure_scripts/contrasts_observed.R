@@ -46,7 +46,7 @@ for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01
   for(tree in unique(dataframe_list[[clone]]$tree)[1:1000]){
     
     # For each metric
-    for(metric in c('S5F','HS','OHS','X7M')){
+    for(metric in c('S5F','HS','OHS','X7M','log_S5F')){
     
       # For each region
       for(region in c('WS','FR','CDR')){
@@ -90,7 +90,7 @@ for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01
 
 lineage <- factor(lineage, levels = c('CH103','CH103L','VRC26int','VRC26L','VRC01_13',
                                            'VRC01_01','VRC01_19'))
-metric_column <- factor(metric_column, levels = c('S5F','HS','OHS','X7M'))
+metric_column <- factor(metric_column, levels = c('S5F','HS','OHS','X7M','log_S5F'))
 region_column <- factor(region_column, levels = c('WS','FR','CDR'))
 
   
@@ -123,7 +123,7 @@ HPD_llim_nontrunk <- c()
 
 for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01_19')){
 #for(clone in c('CH103','CH103L','VRC26L','VRC01_01','VRC01_13','VRC01_19')){  
-  for(metric in c('S5F','HS','OHS','X7M')){
+  for(metric in c('S5F','HS','OHS','X7M','log_S5F')){
     for(region in c('WS','FR','CDR')){
       values_all <- global_dataframe$fraction_negative_all[global_dataframe$lineage == clone &
                                                      global_dataframe$region == region &
@@ -188,7 +188,7 @@ for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01
 
 lineage <- factor(lineage, levels = c('CH103','CH103L','VRC26int','VRC26L','VRC01_13',
                                       'VRC01_01','VRC01_19'))
-metric_column <- factor(metric_column, levels = c('S5F','HS','OHS','X7M'))
+metric_column <- factor(metric_column, levels = c('S5F','HS','OHS','X7M','log_S5F'))
 region_column <- factor(region_column, levels = c('WS','FR','CDR'))  
 
   
@@ -205,7 +205,8 @@ metric_names <- c(
   'S5F' = 'S5F',
   'HS' = ' WRCH/DGYW hotspots',
   'OHS' = 'Overlapping hotspots',
-  'X7M' = '7-mer mutability'
+  'X7M' = '7-mer mutability',
+  'log_S5F' = 'log-S5F mutability'
 )
 region_names <- c(
   'WS'="Whole sequence",
@@ -253,14 +254,30 @@ pl_S5F <- base_plot +
   geom_point(data=subset(summary_dataframe, metric == 'S5F'),aes(y=mean_fraction_negative_all), 
              shape = 21, fill = 'firebrick1', alpha = 0.7,size = 2.5)  +
   
-
-    
   facet_grid(.~region, labeller = labeller(region=region_names)) + 
   theme(strip.text.x = element_text(size = 12))
   
 pdf('contrasts_observed.pdf', width = 7.01, height = 3.43)
 plot(pl_S5F)
 dev.off()
+
+#======= Plot with mean-log-S5F contrasts
+pl_logS5F <- base_plot + 
+  
+  geom_linerange(data=subset(summary_dataframe, metric == 'log_S5F'),
+                 aes(ymin=HPD_llim_all, 
+                     ymax = HPD_ulim_all), colour = 'red4') +
+  
+  geom_point(data=subset(summary_dataframe, metric == 'log_S5F'),aes(y=mean_fraction_negative_all), 
+             shape = 21, fill = 'firebrick1', alpha = 0.7,size = 2.5)  +
+  
+  facet_grid(.~region, labeller = labeller(region=region_names)) + 
+  theme(strip.text.x = element_text(size = 12))
+
+pdf('geom_and_log_S5F_plots/contrasts_observed_logS5F.pdf', width = 7.01, height = 3.43)
+plot(pl_logS5F)
+dev.off()
+
 
 #======= Plot with results for other metrics (supplement)
 
