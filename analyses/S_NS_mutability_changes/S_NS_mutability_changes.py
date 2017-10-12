@@ -633,14 +633,14 @@ def main(argv):
                                         elif metric == 'logS5F':
                                             change_dictionary = logS5F_changes
 
-                                    for mutability_model in ['S5F','uniform','CP']:
+                                        for mutability_model in ['S5F','uniform','CP']:
 
-                                        total_change = change_dictionary[simulation_type][mutability_model][region]['total'][i]
-                                        syn_change = change_dictionary[simulation_type][mutability_model][region]['syn'][i]
-                                        nonsyn_change = change_dictionary[simulation_type][mutability_model][region]['nonsyn'][i]
+                                            total_change = change_dictionary[simulation_type][mutability_model][region]['total'][i]
+                                            syn_change = change_dictionary[simulation_type][mutability_model][region]['syn'][i]
+                                            nonsyn_change = change_dictionary[simulation_type][mutability_model][region]['nonsyn'][i]
 
-                                        new_line_sim += ',' + str(total_change) + ',' + str(syn_change) + ',' + \
-                                                        str(nonsyn_change)
+                                            new_line_sim += ',' + str(total_change) + ',' + str(syn_change) + ',' + \
+                                                            str(nonsyn_change)
                             new_line_sim += '\n'
 
                             results_file.write(new_line_sim)

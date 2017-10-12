@@ -70,13 +70,13 @@ for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19
     clone_dataframe_obs <- dataframe_list_obs[[clone]]
     
     #for(metric in c('S5F','HS','OHS')){
-    for(metric in c('S5F')){
+    for(metric in c('S5F', 'logS5F')){
       for(sub_type in c('total','syn_only','nonsyn_only')){
           
-        contrast_syn <- clone_dataframe_obs[,paste('S5F_change_syn',ifelse(region=='WS','',
+        contrast_syn <- clone_dataframe_obs[,paste(metric, '_change_syn',ifelse(region=='WS','',
                                                          paste('_', region, sep ='')), sep ='')]
         
-        contrast_nonsyn <-clone_dataframe_obs[,paste('S5F_change_nonsyn',ifelse(region=='WS','',
+        contrast_nonsyn <-clone_dataframe_obs[,paste(metric, '_change_nonsyn',ifelse(region=='WS','',
                                                                            paste('_', region, sep ='')), sep ='')]
         if(sub_type == 'total'){
           contrast_true <- contrast_syn + contrast_nonsyn
@@ -184,7 +184,7 @@ for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19
 
 lineage_vector <- factor(lineage_vector, levels = c('CH103','CH103L','VRC26','VRC26L','VRC01_13',
                                       'VRC01_01','VRC01_19'))
-metric_vector <- factor(metric_vector, levels = c('S5F','HS','OHS'))
+metric_vector <- factor(metric_vector, levels = c('S5F','logS5F'))
 region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))
 
 combined_dataframe <- data.frame(lineage=lineage_vector, metric = metric_vector, region = region_vector, substitution_class, mean_contrast_true, 
@@ -198,6 +198,7 @@ combined_dataframe <- data.frame(lineage=lineage_vector, metric = metric_vector,
                                  
 # DATAFRAME WITH SUMMED CHANGES IN MUTABILITY ACROSS THE TREE
 lineage_vector <- c()
+metric_vector <- c()
 region_vector <- c()
 cumulative_change <- c()
 substitution_class <- c()
@@ -208,21 +209,25 @@ for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19
   clone_dataframe_obs <- dataframe_list_obs[[clone]] 
   
   for(region in c('WS','FR','CDR')){
-    region_id <- ifelse(region == 'WS','', paste('_',region,sep=''))
-    for(class in c('syn_only','nonsyn_only')){
-  
-      if(class == 'syn_only'){
-        contrasts <- clone_dataframe_obs[,paste('S5F_change_syn',region_id, sep='')]
-      }else{
-        contrasts <- clone_dataframe_obs[,paste('S5F_change_nonsyn',region_id, sep='')]
+    for(metric in c('S5F','logS5F')){
+      
+      region_id <- ifelse(region == 'WS','', paste('_',region,sep=''))
+      for(class in c('syn_only','nonsyn_only')){
+    
+        if(class == 'syn_only'){
+          contrasts <- clone_dataframe_obs[,paste(metric, '_change_syn',region_id, sep='')]
+        }else{
+          contrasts <- clone_dataframe_obs[,paste(metric, '_change_nonsyn',region_id, sep='')]
+        }
+        
+        lineage_vector <- c(lineage_vector, clone)
+        region_vector <- c(region_vector, region)
+        metric_vector <- c(metric_vector, metric)
+        substitution_class <- c(substitution_class, class)
+        cumulative_change <- c(cumulative_change, sum(contrasts))
+        
+        group <- c(group, paste(region, class, sep ='_'))
       }
-      
-      lineage_vector <- c(lineage_vector, clone)
-      region_vector <- c(region_vector, region)
-      substitution_class <- c(substitution_class, class)
-      cumulative_change <- c(cumulative_change, sum(contrasts))
-      
-      group <- c(group, paste(region, class, sep ='_'))
     }
   }
 } 
@@ -231,8 +236,9 @@ lineage_vector <- factor(lineage_vector, levels = c('CH103','CH103L','VRC26','VR
 group <- factor(group, levels = c('WS_syn_only','WS_nonsyn_only','FR_syn_only','FR_nonsyn_only',
                                   'CDR_syn_only','CDR_nonsyn_only'))
 region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))
+metric_vector <- factor(metric_vector, levels = c('S5F','logS5F'))
 substitution_class <- factor(substitution_class, levels = c('syn_only','nonsyn_only'))
-total_change_dataframe <- data.frame(lineage=lineage_vector, region = region_vector, 
+total_change_dataframe <- data.frame(lineage=lineage_vector, region = region_vector, metric = metric_vector, 
                                      substitution_class,cumulative_change, group)
 
 
@@ -267,8 +273,15 @@ for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_13','VRC01_01','VRC01_19
 # =====================================================================================================================
 
 # ====================================== CUMULATIVE CHANGES IN MUTABILITY =============================================
-total_changes_pl <- ggplot(subset(total_change_dataframe, region != 'WS'),
-                           aes(y=cumulative_change,x=region)) +
+total_changes_plot <- function(metric){
+  subset_dataframe <- total_change_dataframe[total_change_dataframe$region != 'WS' &
+                                              total_change_dataframe$metric == metric, ]
+  
+  ylabel <- switch(metric,
+                   S5F = 'Cumulative change in mean S5F mutability',
+                   logS5F = 'Cumulative change in mean log-S5F mutability')
+  
+  pl <- ggplot(subset_dataframe,aes(y=cumulative_change,x=region)) +
 
   geom_col(aes(fill = substitution_class), 
            width = 0.7, position=position_stack()) + 
@@ -277,7 +290,7 @@ total_changes_pl <- ggplot(subset(total_change_dataframe, region != 'WS'),
   geom_hline(yintercept=0,linetype = 2) +
   theme_bw() +
   #theme_classic() + 
-  ylab('Cumulative change in average mutability') + 
+  ylab(ylabel) + 
   xlab('Region') +
   theme(legend.position = 'top',
         legend.text=element_text(size=11)
@@ -293,7 +306,15 @@ total_changes_pl <- ggplot(subset(total_change_dataframe, region != 'WS'),
                   ) +
   guides(fill=guide_legend(title=NULL))
   
-  
+  return(pl)
+}
+
+total_changes_plot_S5F <- total_changes_plot('S5F')
+total_changes_plot_logS5F <- total_changes_plot('logS5F')
+
+pdf('geom_and_log_S5F_plots/S_NS_total_changes_logS5F.pdf', height = 5, width = 8)
+  plot(total_changes_plot_logS5F)
+dev.off()
 
 # =======================  BRANCH-LEVEL CHANGES IN MUTABILITY DUE - DATA VS. MODELS  =========================
 # Basic plotting function
