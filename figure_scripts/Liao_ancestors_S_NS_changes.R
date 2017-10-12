@@ -32,7 +32,7 @@ source('ggplot_parameters.R')
 
 pl_CDR <- ggplot(subset(results_dataframe, region == 'CDR' & substitution_class != 
                       'total'), 
-                 aes(x = pair, y = S5F_mutability_change)) +
+                 aes(x = pair, y = logS5F_mutability_change)) +
   ggplot_theme +
   xlab('Ancestor-descendant pair') +
   ylab('Change in mean CDR mutability') +

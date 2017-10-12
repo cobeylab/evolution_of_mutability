@@ -44,8 +44,8 @@
       <file leaf-file-name="S_NS_mutability_changes.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/S_NS_mutability_changes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="389">
-              <caret line="646" column="0" selection-start-line="646" selection-start-column="0" selection-end-line="646" selection-end-column="0" />
+            <state relative-caret-position="224">
+              <caret line="635" column="19" selection-start-line="635" selection-start-column="19" selection-end-line="635" selection-end-column="19" />
               <folding>
                 <element signature="e#1336#1439#0" expanded="false" />
                 <element signature="e#1486#1589#0" expanded="false" />
@@ -547,8 +547,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/S_NS_mutability_changes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="389">
-          <caret line="646" column="0" selection-start-line="646" selection-start-column="0" selection-end-line="646" selection-end-column="0" />
+        <state relative-caret-position="224">
+          <caret line="635" column="19" selection-start-line="635" selection-start-column="19" selection-end-line="635" selection-end-column="19" />
           <folding>
             <element signature="e#1336#1439#0" expanded="false" />
             <element signature="e#1486#1589#0" expanded="false" />

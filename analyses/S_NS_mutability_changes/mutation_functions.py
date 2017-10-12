@@ -74,7 +74,7 @@ def relative_mutabilities(seq, mutability_model):
 
 
 def sequence_differences(parent_sequence, descendant_sequence, partition_points):
-    '''Function for calculating S5F differences between a pair of sequences:
+    '''Function for calculating differences in mean S5F and mean logS5F between a pair of sequences, partitioned into syn. and non-syn. contributions
         Also returns sequences with only syn. and only non-syn. differences, and a list of what 5-nucleotide motifs mutated
     '''
 

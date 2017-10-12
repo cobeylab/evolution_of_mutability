@@ -55,8 +55,6 @@ assert(region_of_difference(24, partition_points) == 'FR')
 assert(region_of_difference(34, partition_points) == 'FR')
 
 
-
-
 # Ancestral descendant pairs from the tree in the paper. [ancestor, descendant]
 ancestral_descendant_pairs = [['UCA_VH', 'I8_VH'],
                               ['I8_VH', 'I7_VH'],
@@ -74,7 +72,7 @@ ancestral_descendant_pairs = [['UCA_VH', 'I8_VH'],
                               ]
 
 with open('../../results/Liao_ancestors_analysis/Liao_ancestors_S_NS_changes.csv', 'w') as output_file:
-    output_file.write('pair,substitution_class,region,n_codon_changes,S5F_mutability_change\n')
+    output_file.write('pair,substitution_class,region,n_codon_changes,S5F_mutability_change,logS5F_mutability_change\n')
 
     for pair in ancestral_descendant_pairs:
         seq_diffs = sequence_differences(parent_sequence = ancestors[pair[0]], descendant_sequence = ancestors[pair[1]],
@@ -115,17 +113,29 @@ with open('../../results/Liao_ancestors_analysis/Liao_ancestors_S_NS_changes.csv
             for substitution_class in ['syn','nonsyn','total']:
 
                 if substitution_class == 'total':
+
+                    # Get change in mean S5F
                     mutability_change = seq_diffs['mutability_change_syn' + region_label] + \
                                         seq_diffs['mutability_change_nonsyn' + region_label]
+
+                    # Get change in mean log S5F
+                    log_mutability_change = seq_diffs['log_mutability_change_syn' + region_label] + \
+                                        seq_diffs['log_mutability_change_nonsyn' + region_label]
+
                 else:
+                    # Get change in mean S5F
                     mutability_change = seq_diffs['mutability_change_' + substitution_class + region_label]
 
+                    # Get change in mean log S5F
+                    log_mutability_change = seq_diffs['log_mutability_change_' + substitution_class + region_label]
+
                 mutability_change = str(mutability_change)
+                log_mutability_change = str(log_mutability_change)
 
                 n_codon_changes = str(n_codon_diffs[substitution_class][region])
 
                 output_file.write('-'.join(pair) + ',' + substitution_class + ',' + region + ',' + n_codon_changes)
-                output_file.write(',' + mutability_change)
+                output_file.write(',' + mutability_change + ',' + log_mutability_change)
                 output_file.write('\n')
 
 
