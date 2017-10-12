@@ -8,6 +8,7 @@ import sys
 import re
 from dendropy import Tree
 from numpy import random
+from numpy import log
 from copy import deepcopy
 
 # Import mutability functions and partition points from analyses/mutability folder
@@ -212,19 +213,19 @@ def main(argv):
 
         output_file_obs.write('sequence_id,time_from_root,')
 
-        output_file_obs.write('observed_S5F_WS,observed_7M_WS,observed_HS_WS,observed_CS_WS,observed_OHS_WS,')
-        output_file_obs.write('observed_S5F_FR,observed_7M_FR,observed_HS_FR,observed_CS_FR,observed_OHS_FR,')
-        output_file_obs.write('observed_S5F_CDR,observed_7M_CDR,observed_HS_CDR,observed_CS_CDR,observed_OHS_CDR\n')
+        output_file_obs.write('observed_S5F_WS,observed_7M_WS,observed_HS_WS,observed_CS_WS,observed_OHS_WS,observed_logS5F_WS, observed_geomS5F_WS,')
+        output_file_obs.write('observed_S5F_FR,observed_7M_FR,observed_HS_FR,observed_CS_FR,observed_OHS_FR,observed_logS5F_FR, observed_geomS5F_FR,')
+        output_file_obs.write('observed_S5F_CDR,observed_7M_CDR,observed_HS_CDR,observed_CS_CDR,observed_OHS_CDR,observed_logS5F_CDR, observed_geomS5F_CDR\n')
         
         output_file_random.write('sequence_id,time_from_root,')
 
-        output_file_random.write('randomized_S5F_WS_allsites,randomized_7M_WS_allsites,randomized_HS_WS_allsites,randomized_CS_WS_allsites,randomized_OHS_WS_allsites,')
-        output_file_random.write('randomized_S5F_FR_allsites,randomized_7M_FR_allsites,randomized_HS_FR_allsites,randomized_CS_FR_allsites,randomized_OHS_FR_allsites,')
-        output_file_random.write('randomized_S5F_CDR_allsites,randomized_7M_CDR_allsites,randomized_HS_CDR_allsites,randomized_CS_CDR_allsites,randomized_OHS_CDR_allsites,')
+        output_file_random.write('randomized_S5F_WS_allsites,randomized_7M_WS_allsites,randomized_HS_WS_allsites,randomized_CS_WS_allsites,randomized_OHS_WS_allsites,randomized_logS5F_WS_allsites,randomized_geomS5F_WS_allsites,')
+        output_file_random.write('randomized_S5F_FR_allsites,randomized_7M_FR_allsites,randomized_HS_FR_allsites,randomized_CS_FR_allsites,randomized_OHS_FR_allsites,randomized_logS5F_FR_allsites,randomized_geomS5F_FR_allsites,')
+        output_file_random.write('randomized_S5F_CDR_allsites,randomized_7M_CDR_allsites,randomized_HS_CDR_allsites,randomized_CS_CDR_allsites,randomized_OHS_CDR_allsites,randomized_logS5F_CDR_allsites,randomized_geomS5F_CDR_allsites,')
         
-        output_file_random.write('randomized_S5F_WS_diffsites,randomized_7M_WS_diffsites,randomized_HS_WS_diffsites,randomized_CS_WS_diffsites,randomized_OHS_WS_diffsites,')
-        output_file_random.write('randomized_S5F_FR_diffsites,randomized_7M_FR_diffsites,randomized_HS_FR_diffsites,randomized_CS_FR_diffsites,randomized_OHS_FR_diffsites,')
-        output_file_random.write('randomized_S5F_CDR_diffsites,randomized_7M_CDR_diffsites,randomized_HS_CDR_diffsites,randomized_CS_CDR_diffsites,randomized_OHS_CDR_diffsites\n')
+        output_file_random.write('randomized_S5F_WS_diffsites,randomized_7M_WS_diffsites,randomized_HS_WS_diffsites,randomized_CS_WS_diffsites,randomized_OHS_WS_diffsites,randomized_logS5F_WS_diffsites,randomized_geomS5F_WS_diffsites,')
+        output_file_random.write('randomized_S5F_FR_diffsites,randomized_7M_FR_diffsites,randomized_HS_FR_diffsites,randomized_CS_FR_diffsites,randomized_OHS_FR_diffsites,randomized_logS5F_FR_diffsites,randomized_geomS5F_FR_diffsites,')
+        output_file_random.write('randomized_S5F_CDR_diffsites,randomized_7M_CDR_diffsites,randomized_HS_CDR_diffsites,randomized_CS_CDR_diffsites,randomized_OHS_CDR_diffsites,randomized_logS5F_CDR_diffsites,randomized_geomS5F_CDR_diffsites\n')
 
 
         # ================================== DO THE ANALYSIS FOR EACH NODE =============================================
@@ -303,18 +304,27 @@ def main(argv):
                 output_file_obs.write(str(observed_mutability_WS[1]['HS']) + ',')
                 output_file_obs.write(str(observed_mutability_WS[1]['CS']) + ',')
                 output_file_obs.write(str(observed_mutability_WS[1]['OHS']) + ',')
+                # get mean log S5F by taking the log of the geometric mean
+                output_file_obs.write(str(log(observed_mutability_WS[1]['geom_mean_S5F'])) + ',')
+                output_file_obs.write(str(observed_mutability_WS[1]['geom_mean_S5F']) + ',')
 
                 output_file_obs.write(str(observed_mutability_aggregated['FR_mutability']['mean_S5F']) + ',')
                 output_file_obs.write(str(observed_mutability_aggregated['FR_mutability']['mean_7M']) + ',')
                 output_file_obs.write(str(observed_mutability_aggregated['FR_mutability']['HS']) + ',')
                 output_file_obs.write(str(observed_mutability_aggregated['FR_mutability']['CS']) + ',')
                 output_file_obs.write(str(observed_mutability_aggregated['FR_mutability']['OHS']) + ',')
+                # get mean log S5F by taking the log of the geometric mean
+                output_file_obs.write(str(log(observed_mutability_aggregated['FR_mutability']['geom_mean_S5F'])) + ',')
+                output_file_obs.write(str(observed_mutability_aggregated['FR_mutability']['geom_mean_S5F']) + ',')
 
                 output_file_obs.write(str(observed_mutability_aggregated['CDR_mutability']['mean_S5F']) + ',')
                 output_file_obs.write(str(observed_mutability_aggregated['CDR_mutability']['mean_7M']) + ',')
                 output_file_obs.write(str(observed_mutability_aggregated['CDR_mutability']['HS']) + ',')
                 output_file_obs.write(str(observed_mutability_aggregated['CDR_mutability']['CS']) + ',')
-                output_file_obs.write(str(observed_mutability_aggregated['CDR_mutability']['OHS']) + '\n')
+                output_file_obs.write(str(observed_mutability_aggregated['CDR_mutability']['OHS']) + ',')
+                # get mean log S5F by taking the log of the geometric mean
+                output_file_obs.write(str(log(observed_mutability_aggregated['CDR_mutability']['geom_mean_S5F'])) + ',')
+                output_file_obs.write(str(observed_mutability_aggregated['CDR_mutability']['geom_mean_S5F']) + '\n')
 
                 # Define lists of codon sites to randomize for each randomization procedure
                 randomized_sites = {}
@@ -389,18 +399,27 @@ def main(argv):
                         output_file_random.write(str(randomized_mutability_WS[1]['HS']) + ',')
                         output_file_random.write(str(randomized_mutability_WS[1]['CS']) + ',')
                         output_file_random.write(str(randomized_mutability_WS[1]['OHS']) + ',')
+                        # get mean log S5F by taking the log of the geometric mean
+                        output_file_random.write(str(log(randomized_mutability_WS[1]['geom_mean_S5F'])) + ',')
+                        output_file_random.write(str(randomized_mutability_WS[1]['geom_mean_S5F']) + ',')
 
                         output_file_random.write(str(randomized_mutability_aggregated['FR_mutability']['mean_S5F']) + ',')
                         output_file_random.write(str(randomized_mutability_aggregated['FR_mutability']['mean_7M']) + ',')
                         output_file_random.write(str(randomized_mutability_aggregated['FR_mutability']['HS']) + ',')
                         output_file_random.write(str(randomized_mutability_aggregated['FR_mutability']['CS']) + ',')
                         output_file_random.write(str(randomized_mutability_aggregated['FR_mutability']['OHS']) + ',')
+                        # get mean log S5F by taking the log of the geometric mean
+                        output_file_random.write(str(log(randomized_mutability_aggregated['FR_mutability']['geom_mean_S5F'])) + ',')
+                        output_file_random.write(str(randomized_mutability_aggregated['FR_mutability']['geom_mean_S5F']) + ',')
 
                         output_file_random.write(str(randomized_mutability_aggregated['CDR_mutability']['mean_S5F']) + ',')
                         output_file_random.write(str(randomized_mutability_aggregated['CDR_mutability']['mean_7M']) + ',')
                         output_file_random.write(str(randomized_mutability_aggregated['CDR_mutability']['HS']) + ',')
                         output_file_random.write(str(randomized_mutability_aggregated['CDR_mutability']['CS']) + ',')
-                        output_file_random.write(str(randomized_mutability_aggregated['CDR_mutability']['OHS']))
+                        output_file_random.write(str(randomized_mutability_aggregated['CDR_mutability']['OHS']) + ',')
+                        # get mean log S5F by taking the log of the geometric mean
+                        output_file_random.write(str(log(randomized_mutability_aggregated['CDR_mutability']['geom_mean_S5F'])) + ',')
+                        output_file_random.write(str(randomized_mutability_aggregated['CDR_mutability']['geom_mean_S5F']))
 
                         if key == 'allsites':
                             output_file_random.write(',')

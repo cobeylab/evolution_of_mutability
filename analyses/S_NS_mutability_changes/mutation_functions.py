@@ -10,6 +10,7 @@ from dendropy import Tree
 
 import re
 from numpy import random
+from numpy import log
 from copy import deepcopy
 import csv
 from itertools import permutations
@@ -73,7 +74,7 @@ def relative_mutabilities(seq, mutability_model):
 
 
 def sequence_differences(parent_sequence, descendant_sequence, partition_points):
-    '''Function for calculating differences between a pair of sequences:
+    '''Function for calculating S5F differences between a pair of sequences:
         Also returns sequences with only syn. and only non-syn. differences, and a list of what 5-nucleotide motifs mutated
     '''
 
@@ -155,16 +156,22 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
     # Change in mutability associated with synonymous changes
     mutability_change_syn = 0
+    log_mutability_change_syn = 0
 
     # Change in mutability associated with nonsynonymous changes
     mutability_change_nonsyn = 0
+    log_mutability_change_nonsyn = 0
 
     # Syn. and non-syn. changes partitioned by FRs and CDRs:
     mutability_change_syn_FR = 0
     mutability_change_nonsyn_FR = 0
+    log_mutability_change_syn_FR = 0
+    log_mutability_change_nonsyn_FR = 0
 
     mutability_change_syn_CDR = 0
     mutability_change_nonsyn_CDR = 0
+    log_mutability_change_syn_CDR = 0
+    log_mutability_change_nonsyn_CDR = 0
 
     # Number of motifs with more than one type of change (syn. and non-syn).
     motifs_with_syn_nonsyn = 0
@@ -230,6 +237,7 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
             # Do parent and descendant differ?
             if parent_motif != descendant_motif:
                 delta_mutability = S5F[descendant_motif] - S5F[parent_motif]
+                delta_log_mutability = log(S5F[descendant_motif]) - log(S5F[parent_motif])
 
                 # Determine number of syn. and non-syn. substitutions associated with change in motif
                 # List of nucleotide sites spanning motif
@@ -256,14 +264,18 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
                     # Change in S5F mutability attributable to syn changes:
                     delta_mutability_syn = delta_mutability * float(syn_contribution) / (syn_contribution + nonsyn_contribution)
+                    delta_log_mutability_syn = delta_log_mutability * float(syn_contribution) / (syn_contribution + nonsyn_contribution)
 
                     # Change in S5F mutability attributable to nonsyn changes
                     delta_mutability_nonsyn = delta_mutability * float(nonsyn_contribution) / (syn_contribution + nonsyn_contribution)
+                    delta_log_mutability_nonsyn = delta_log_mutability * float(nonsyn_contribution) / (syn_contribution + nonsyn_contribution)
 
                     # Add changes in mutability for this motif to sequence totals:
                     mutability_change_syn += delta_mutability_syn
+                    log_mutability_change_syn += delta_log_mutability_syn
 
                     mutability_change_nonsyn += delta_mutability_nonsyn
+                    log_mutability_change_nonsyn += delta_log_mutability_nonsyn
 
                     # Add changes in mutability to FR and CDR totals:
 
@@ -271,9 +283,16 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
                         mutability_change_syn_FR += delta_mutability_syn
                         mutability_change_nonsyn_FR += delta_mutability_nonsyn
 
+                        log_mutability_change_syn_FR += delta_log_mutability_syn
+                        log_mutability_change_nonsyn_FR += delta_log_mutability_nonsyn
+
                     elif motif_pos in CDR_sites:
                         mutability_change_syn_CDR += delta_mutability_syn
                         mutability_change_nonsyn_CDR += delta_mutability_nonsyn
+
+                        log_mutability_change_syn_CDR += delta_log_mutability_syn
+                        log_mutability_change_nonsyn_CDR += delta_log_mutability_nonsyn
+
 
                     #print [float(syn_contribution) / (syn_contribution + nonsyn_contribution),
                     # float(nonsyn_contribution) / (syn_contribution + nonsyn_contribution)]
@@ -312,12 +331,19 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     # Averaging mutability differences (divide by seq_length - 4)
     mutability_change_syn = mutability_change_syn / (seq_length - 4)
     mutability_change_nonsyn = mutability_change_nonsyn / (seq_length - 4)
+    log_mutability_change_syn = log_mutability_change_syn / (seq_length - 4)
+    log_mutability_change_nonsyn = log_mutability_change_nonsyn / (seq_length - 4)
+    
 
     mutability_change_syn_FR = mutability_change_syn_FR / (len(FR_sites) - 2)
     mutability_change_nonsyn_FR = mutability_change_nonsyn_FR / (len(FR_sites) - 2)
+    log_mutability_change_syn_FR = log_mutability_change_syn_FR / (len(FR_sites) - 2)
+    log_mutability_change_nonsyn_FR = log_mutability_change_nonsyn_FR / (len(FR_sites) - 2)
 
     mutability_change_syn_CDR = mutability_change_syn_CDR / (len(CDR_sites) - 2)
     mutability_change_nonsyn_CDR = mutability_change_nonsyn_CDR / (len(CDR_sites) - 2)
+    log_mutability_change_syn_CDR = log_mutability_change_syn_CDR / (len(CDR_sites) - 2)
+    log_mutability_change_nonsyn_CDR = log_mutability_change_nonsyn_CDR / (len(CDR_sites) - 2)
 
 
     output_dictionary = {}
@@ -339,6 +365,12 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     output_dictionary['mutability_change_nonsyn_FR'] = mutability_change_nonsyn_FR
     output_dictionary['mutability_change_syn_CDR'] = mutability_change_syn_CDR
     output_dictionary['mutability_change_nonsyn_CDR'] = mutability_change_nonsyn_CDR
+    output_dictionary['log_mutability_change_syn'] = log_mutability_change_syn
+    output_dictionary['log_mutability_change_nonsyn'] = log_mutability_change_nonsyn
+    output_dictionary['log_mutability_change_syn_FR'] = log_mutability_change_syn_FR
+    output_dictionary['log_mutability_change_nonsyn_FR'] = log_mutability_change_nonsyn_FR
+    output_dictionary['log_mutability_change_syn_CDR'] = log_mutability_change_syn_CDR
+    output_dictionary['log_mutability_change_nonsyn_CDR'] = log_mutability_change_nonsyn_CDR
     output_dictionary['motifs_with_syn_nonsyn'] = motifs_with_syn_nonsyn
     output_dictionary['nt_divergence_FRs'] = nt_divergence_FRs
     output_dictionary['nt_divergence_CDRs'] = nt_divergence_CDRs

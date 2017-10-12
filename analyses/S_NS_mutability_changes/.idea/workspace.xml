@@ -15,38 +15,42 @@
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
-  <component name="DockManager">
-    <window id="1">
-      <content type="file-editors">
-        <state>
-          <leaf>
-            <file leaf-file-name="mutability_function.py" pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/../mutability/mutability_function.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="165">
-                    <caret line="298" column="0" selection-start-line="295" selection-start-column="0" selection-end-line="298" selection-end-column="0" />
-                    <folding />
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
-  </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="simulations_MCC" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="mutability_vs_time.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="mutability_vs_time.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../mutability_vs_time/mutability_vs_time.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3045">
+            <state relative-caret-position="0">
               <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mutation_functions.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/mutation_functions.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-547">
+              <caret line="336" column="0" selection-start-line="336" selection-start-column="0" selection-end-line="336" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="S_NS_mutability_changes.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/S_NS_mutability_changes.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="389">
+              <caret line="646" column="0" selection-start-line="646" selection-start-column="0" selection-end-line="646" selection-end-column="0" />
+              <folding>
+                <element signature="e#1336#1439#0" expanded="false" />
+                <element signature="e#1486#1589#0" expanded="false" />
+                <element signature="e#1636#2173#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -66,8 +70,9 @@
         <option value="$PROJECT_DIR$/selection.py" />
         <option value="$PROJECT_DIR$/simulations_MCC.py" />
         <option value="$PROJECT_DIR$/get_mutability_from_XML.py" />
-        <option value="$PROJECT_DIR$/S_NS_mutability_changes.py" />
         <option value="$PROJECT_DIR$/mutation_functions.py" />
+        <option value="$PROJECT_DIR$/../mutability/mutability_function.py" />
+        <option value="$PROJECT_DIR$/S_NS_mutability_changes.py" />
       </list>
     </option>
   </component>
@@ -101,7 +106,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -123,12 +127,13 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../mutability_vs_time/mutability_vs_time.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../mutability/mutability_function.py" />
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Volumes/cobey-2/mvieira/evolvability/analyses/simulations_MCC/simulations_MCC.py" />
   </component>
   <component name="RunManager">
@@ -298,8 +303,8 @@
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21634954" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3290653" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25096032" sideWeight="0.12332629" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25096032" sideWeight="0.8766737" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18565941" sideWeight="0.12825933" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18565941" sideWeight="0.87174064" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24947146" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -338,9 +343,9 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#1314#1417#0" expanded="false" />
-            <element signature="e#1464#1567#0" expanded="false" />
-            <element signature="e#1614#2151#0" expanded="false" />
+            <element signature="e#1336#1439#0" expanded="false" />
+            <element signature="e#1486#1589#0" expanded="false" />
+            <element signature="e#1636#2173#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -357,9 +362,9 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#1314#1417#0" expanded="false" />
-            <element signature="e#1464#1567#0" expanded="false" />
-            <element signature="e#1614#2151#0" expanded="false" />
+            <element signature="e#1336#1439#0" expanded="false" />
+            <element signature="e#1486#1589#0" expanded="false" />
+            <element signature="e#1636#2173#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -516,39 +521,39 @@
     <entry file="file://$PROJECT_DIR$/selection.py" />
     <entry file="file://$PROJECT_DIR$/simulations_MCC.py" />
     <entry file="file://$PROJECT_DIR$/get_mutability_from_XML.py" />
-    <entry file="file://$PROJECT_DIR$/../mutability/mutability_function.py">
+    <entry file="file://$PROJECT_DIR$/../mutability_vs_time/mutability_vs_time.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="298" column="0" selection-start-line="295" selection-start-column="0" selection-end-line="298" selection-end-column="0" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mutation_functions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="79" column="28" selection-start-line="79" selection-start-column="28" selection-end-line="79" selection-end-column="28" />
+        <state relative-caret-position="-547">
+          <caret line="336" column="0" selection-start-line="336" selection-start-column="0" selection-end-line="336" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../mutability/mutability_function.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1635">
+          <caret line="444" column="0" selection-start-line="444" selection-start-column="0" selection-end-line="444" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/S_NS_mutability_changes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
-          <caret line="574" column="23" selection-start-line="574" selection-start-column="23" selection-end-line="574" selection-end-column="23" />
+        <state relative-caret-position="389">
+          <caret line="646" column="0" selection-start-line="646" selection-start-column="0" selection-end-line="646" selection-end-column="0" />
           <folding>
-            <element signature="e#1314#1417#0" expanded="false" />
-            <element signature="e#1464#1567#0" expanded="false" />
-            <element signature="e#1614#2151#0" expanded="false" />
+            <element signature="e#1336#1439#0" expanded="false" />
+            <element signature="e#1486#1589#0" expanded="false" />
+            <element signature="e#1636#2173#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../mutability_vs_time/mutability_vs_time.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3045">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>

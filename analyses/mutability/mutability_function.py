@@ -443,7 +443,6 @@ def seq_mutability(seq, partition_points=None):
         n_OHS = count_OHS(l_neighbors[1] + l_neighbors[2] +
                             partition + r_neighbors[0])
 
-        partition_results = [mean_S5F, mean_7M, n_nonzero_7M, n_AIDHS, n_POLHS, C_fraction, n_AIDCS, n_OHS]
         partition_results = {'mean_S5F':mean_S5F, 'mean_7M':mean_7M, 'n_nonzero_7M':n_nonzero_7M,
                              'HS':n_AIDHS, 'POLHS':n_POLHS, 'C_fraction':C_fraction, 'CS':n_AIDCS,
                              'OHS':n_OHS, 'geom_mean_S5F' : geom_mean_S5F}

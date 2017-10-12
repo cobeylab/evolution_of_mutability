@@ -14,6 +14,7 @@ from mutation_functions import sequence_differences, randomize_sequence_constrai
 from mutability_function import seq_mutability, aggregated_mutability, S5F
 from partition_points import partition_points_dic
 from dendropy import Tree
+from numpy import log
 
 import re
 from copy import deepcopy
@@ -120,7 +121,7 @@ def main(argv):
         output_header_obs = deepcopy(output_header_base)
         # Header for output file with observed mutability
         # Ignoring other metrics and focusing on S5F:
-        for metric in ['S5F']:
+        for metric in ['S5F','logS5F']:
             output_header_obs += ',' + metric + '_parent'
             output_header_obs += ',' + metric + '_FR_parent'
             output_header_obs += ',' + metric + '_CDR_parent'
@@ -148,9 +149,7 @@ def main(argv):
         # Header for output file with simulation results:
         output_header_sim = 'replicate,' + output_header_base
         for region in ['WS', 'FR', 'CDR']:
-        # Looking at whole-sequence only for now
-            #for metric in ['S5F','7M','HS','CS','OHS']:
-            for metric in ['S5F']:
+            for metric in ['S5F', 'logS5F']:
                 for mutability_model in ['S5F', 'uniform', 'CP']:
                     # Mutability changes under S5F mutations/S5F transitions model
                     output_header_sim += ',' + metric + '_' + region + '_change_' + mutability_model + 'Mut_S5FTrans_total'
@@ -386,6 +385,7 @@ def main(argv):
                     n_Syn_diffs_3nt = differences['n_syn_diffs_3nt']
 
                     # Get S5F mutability changes associated with synonymous and non-synonymous changes
+                    
                     S5F_WS_change_syn = differences['mutability_change_syn']
                     S5F_WS_change_nonsyn = differences['mutability_change_nonsyn']
 
@@ -394,6 +394,17 @@ def main(argv):
 
                     S5F_change_syn_CDR = differences['mutability_change_syn_CDR']
                     S5F_change_nonsyn_CDR = differences['mutability_change_nonsyn_CDR']
+                    
+                    # Get changes in the mean log S5F
+                    logS5F_WS_change_syn = differences['log_mutability_change_syn']
+                    logS5F_WS_change_nonsyn = differences['log_mutability_change_nonsyn']
+
+                    logS5F_change_syn_FR = differences['log_mutability_change_syn_FR']
+                    logS5F_change_nonsyn_FR = differences['log_mutability_change_nonsyn_FR']
+
+                    logS5F_change_syn_CDR = differences['log_mutability_change_syn_CDR']
+                    logS5F_change_nonsyn_CDR = differences['log_mutability_change_nonsyn_CDR']
+
 
                     # Count number of motifs where both synonymous and nonsynonymous changes happened
                     n_motifs_with_syn_nonsyn_changes = differences['motifs_with_syn_nonsyn']
@@ -449,10 +460,22 @@ def main(argv):
                     S5F_changes = {'constrained': {'S5F': {}, 'uniform': {}, 'CP': {}},
                                    'unconstrained': {'S5F': {}, 'uniform': {}, 'CP': {}}
                                    }
+                    # Dictionary with mean log S5F changes by simulation type (constrained / unconstrained) and mutability model
+                    logS5F_changes = {'constrained': {'S5F': {}, 'uniform': {}, 'CP': {}},
+                                   'unconstrained': {'S5F': {}, 'uniform': {}, 'CP': {}}
+                                   }
+                    
 
                     for key in S5F_changes.keys():
                         for subkey in S5F_changes[key].keys():
                             S5F_changes[key][subkey] = {'WS':{'total':[], 'syn': [], 'nonsyn': []},
+                                                        'FR':{'total':[], 'syn': [], 'nonsyn': []},
+                                                        'CDR':{'total':[], 'syn': [], 'nonsyn': []}
+                                                        }
+                            
+                    for key in logS5F_changes.keys():
+                        for subkey in logS5F_changes[key].keys():
+                            logS5F_changes[key][subkey] = {'WS':{'total':[], 'syn': [], 'nonsyn': []},
                                                         'FR':{'total':[], 'syn': [], 'nonsyn': []},
                                                         'CDR':{'total':[], 'syn': [], 'nonsyn': []}
                                                         }
@@ -494,12 +517,24 @@ def main(argv):
                                     syn_change = diffs_from_parent['mutability_change_syn' + region_id]
                                     nonsyn_change = diffs_from_parent['mutability_change_nonsyn' + region_id]
                                     total_change = syn_change + nonsyn_change
+                                    
+                                    log_syn_change = diffs_from_parent['log_mutability_change_syn' + region_id]
+                                    log_nonsyn_change = diffs_from_parent['log_mutability_change_nonsyn' + region_id]
+                                    log_total_change = log_syn_change + log_nonsyn_change
 
                                     S5F_changes[simulation_type][mutability_model][region]['syn'].append(syn_change)
                                     S5F_changes[simulation_type][mutability_model][region]['nonsyn'].append(
                                         nonsyn_change)
                                     S5F_changes[simulation_type][mutability_model][region]['total'].append(
                                         total_change)
+
+                                    logS5F_changes[simulation_type][mutability_model][region]['syn'].append(
+                                        log_syn_change)
+                                    logS5F_changes[simulation_type][mutability_model][region]['nonsyn'].append(
+                                        log_nonsyn_change)
+                                    logS5F_changes[simulation_type][mutability_model][region]['total'].append(
+                                        log_total_change)
+                                    
 
                     # ===================================== OUTPUT RESULTS =============================================
                     # Follow exact same order as variable names in output_header
@@ -518,37 +553,64 @@ def main(argv):
                     new_line_obs = deepcopy(new_line_base)
 
                     # Observed mutability results
-                    #for metric in ['mean_S5F','mean_7M','HS','CS','OHS']:
-                    for metric in ['mean_S5F']:
+                    
                         # ------ 'observed mutabilities' ------
-                        # Add parent mutability
-                        new_line_obs += str(parent_node_mutability_WS[1][metric]) + ','
-                        new_line_obs += str(parent_node_mutability_aggregated['FR_mutability'][metric]) + ','
-                        new_line_obs += str(parent_node_mutability_aggregated['CDR_mutability'][metric]) + ','
+                    # Add parent mean S5F
+                    new_line_obs += str(parent_node_mutability_WS[1]['mean_S5F']) + ','
+                    new_line_obs += str(parent_node_mutability_aggregated['FR_mutability']['mean_S5F']) + ','
+                    new_line_obs += str(parent_node_mutability_aggregated['CDR_mutability']['mean_S5F']) + ','
 
-                        # Add descendant mutability:
-                        new_line_obs += str(node_mutability_WS[1][metric]) + ','
-                        new_line_obs += str(node_mutability_aggregated['FR_mutability'][metric]) + ','
-                        new_line_obs += str(node_mutability_aggregated['CDR_mutability'][metric]) + ','
+                    # Add descendant mean S5F:
+                    new_line_obs += str(node_mutability_WS[1]['mean_S5F']) + ','
+                    new_line_obs += str(node_mutability_aggregated['FR_mutability']['mean_S5F']) + ','
+                    new_line_obs += str(node_mutability_aggregated['CDR_mutability']['mean_S5F']) + ','
 
-                        # Add total mutability change:
-                        new_line_obs += str(node_mutability_WS[1][metric] - parent_node_mutability_WS[1][metric]) + ','
+                    # Add total change in mean S5F:
+                    new_line_obs += str(node_mutability_WS[1]['mean_S5F'] - parent_node_mutability_WS[1]['mean_S5F']) + ','
 
-                        # Add mutability change due to synonymous changes:
-                        new_line_obs += str(S5F_WS_change_syn) + ','
+                    # Add change in mean S5F due to synonymous changes:
+                    new_line_obs += str(S5F_WS_change_syn) + ','
 
-                        # Add mutability change due to non-synonymous changes:
-                        new_line_obs += str(S5F_WS_change_nonsyn) + ','
-                        
-                        # Mutability changes in FRs
-                        new_line_obs += str(S5F_change_syn_FR) + ','
-                        new_line_obs += str(S5F_change_nonsyn_FR) + ','
-                        
-                        # Mutability changes in CDRs
-                        new_line_obs += str(S5F_change_syn_CDR) + ','
-                        new_line_obs += str(S5F_change_nonsyn_CDR) + ','
+                    # Add change in mean S5F due to non-synonymous changes:
+                    new_line_obs += str(S5F_WS_change_nonsyn) + ','
 
-                    new_line_obs = new_line_obs[:-1]
+                    # Mean S5F changes in FRs
+                    new_line_obs += str(S5F_change_syn_FR) + ','
+                    new_line_obs += str(S5F_change_nonsyn_FR) + ','
+
+                    # Mean S5F changes in CDRs
+                    new_line_obs += str(S5F_change_syn_CDR) + ','
+                    new_line_obs += str(S5F_change_nonsyn_CDR) + ','
+
+                    # ------- Add results for the mean log S5F, by taking the log of the geometric mean S5F
+                    
+                    # Add parent mean log S5F
+                    new_line_obs += str(log(parent_node_mutability_WS[1]['geom_mean_S5F'])) + ','
+                    new_line_obs += str(log(parent_node_mutability_aggregated['FR_mutability']['geom_mean_S5F'])) + ','
+                    new_line_obs += str(log(parent_node_mutability_aggregated['CDR_mutability']['geom_mean_S5F'])) + ','
+
+                    # Add descendant mean log S5F
+                    new_line_obs += str(log(node_mutability_WS[1]['geom_mean_S5F'])) + ','
+                    new_line_obs += str(log(node_mutability_aggregated['FR_mutability']['geom_mean_S5F'])) + ','
+                    new_line_obs += str(log(node_mutability_aggregated['CDR_mutability']['geom_mean_S5F'])) + ','
+
+                    # Add total change in mean log S5F:
+                    new_line_obs += str(log(node_mutability_WS[1]['geom_mean_S5F']) - log(parent_node_mutability_WS[1]['geom_mean_S5F'])) + ','
+
+                    # Add change in mean log S5F due to synonymous changes:
+                    new_line_obs += str(logS5F_WS_change_syn) + ','
+                    
+                    # Add change in mean log S5F due to non-synonymous changes:
+                    new_line_obs += str(logS5F_WS_change_nonsyn) + ','
+
+                    # Mean log S5F changes in FRs
+                    new_line_obs += str(logS5F_change_syn_FR) + ','
+                    new_line_obs += str(logS5F_change_nonsyn_FR) + ','
+
+                    # Mean log S5F changes in CDRs
+                    new_line_obs += str(logS5F_change_syn_CDR) + ','
+                    new_line_obs += str(logS5F_change_nonsyn_CDR)
+
                     new_line_obs += '\n'
 
                     output_file_obs.write(new_line_obs)
@@ -565,14 +627,20 @@ def main(argv):
                         for i in range(n_reps):
                             new_line_sim = str(i + 1) + ',' + new_line_base[:-1]
                             for region in ['WS', 'FR', 'CDR']:
-                                for mutability_model in ['S5F','uniform','CP']:
+                                    for metric in ['S5F','logS5F']:
+                                        if metric == 'S5F':
+                                            change_dictionary = S5F_changes
+                                        elif metric == 'logS5F':
+                                            change_dictionary = logS5F_changes
 
-                                    total_change = S5F_changes[simulation_type][mutability_model][region]['total'][i]
-                                    syn_change = S5F_changes[simulation_type][mutability_model][region]['syn'][i]
-                                    nonsyn_change = S5F_changes[simulation_type][mutability_model][region]['nonsyn'][i]
+                                    for mutability_model in ['S5F','uniform','CP']:
 
-                                    new_line_sim += ',' + str(total_change) + ',' + str(syn_change) + ',' + \
-                                                    str(nonsyn_change)
+                                        total_change = change_dictionary[simulation_type][mutability_model][region]['total'][i]
+                                        syn_change = change_dictionary[simulation_type][mutability_model][region]['syn'][i]
+                                        nonsyn_change = change_dictionary[simulation_type][mutability_model][region]['nonsyn'][i]
+
+                                        new_line_sim += ',' + str(total_change) + ',' + str(syn_change) + ',' + \
+                                                        str(nonsyn_change)
                             new_line_sim += '\n'
 
                             results_file.write(new_line_sim)
