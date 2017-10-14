@@ -1,6 +1,5 @@
 library('ggplot2')
 
-
 # Load ggplot parameters
 source('ggplot_parameters.R')
 
@@ -18,20 +17,20 @@ tree_sample <- sample(unique(points_dataframe$tree), sample_size, replace = F)
 regressions_dataframe <- read.table(regressions_file_path, header = T, sep = ',')
 
 
-mean_intercept <- mean(regressions_dataframe[, 'intercept_S5F_WS_vs_node_time'])
+mean_intercept <- mean(regressions_dataframe[, 'intercept_geomS5F_WS_vs_node_time'])
 
-mean_slope <- mean(regressions_dataframe[, 'slope_S5F_WS_vs_node_time'])
+mean_slope <- mean(regressions_dataframe[, 'slope_geomS5F_WS_vs_node_time'])
 
 
-pl <- ggplot(points_dataframe, aes(x = node_time, y = S5F_WS)) +
+pl <- ggplot(points_dataframe, aes(x = node_time, y = geomS5F_WS)) +
   xlab("Time since unmutated ancestor (weeks)") +
-  ylab("Mean S5F mutability") + 
+  ylab("Geometric mean of S5F mutability") + 
   ggplot_theme
 
 for(tree in tree_sample){
   dataframe_subset <- points_dataframe[points_dataframe$tree == tree,]
   x <- dataframe_subset[,'node_time']
-  y <- dataframe_subset[,'S5F_WS']
+  y <- dataframe_subset[,'geomS5F_WS']
   factor <- factor(dataframe_subset[,'node_is_tip'])
   
   pl <- pl + geom_point(data=data.frame(x,y,factor), 
@@ -48,11 +47,11 @@ pl <- pl + geom_abline(slope=mean_slope,
                        intercept=mean_intercept, 
                        colour = 'red', linetype = 1, size = 0.5) 
 
-png('CH103_overview_S5F_vs_time.png', width = 3.43, height = 3, units = 'in', res = 400)
+png('CH103_overview_geomS5F_vs_time.png', width = 3.43, height = 3, units = 'in', res = 400)
 plot(pl)
 dev.off()
 
-pdf('CH103_overview_S5F_vs_time.pdf', width = 3.43, height = 3)
+pdf('CH103_overview_geomS5F_vs_time.pdf', width = 3.43, height = 3)
 plot(pl)
 dev.off()
 

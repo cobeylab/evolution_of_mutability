@@ -1,4 +1,4 @@
-# Produces figure for the manuscript showing the results of the simulations on MCC trees
+# Produces figure for the manuscript showing the results of the analysis of S. and NS mutability changes in MCC trees and Liao ancestors
 # Uses the following MCMC chains: CH103_con_run1a, CH103L_con_run1a, VRC26int_con_run1a, VRC26L_con_run1a, VRC01_01_log_run1a, VRC01_13_log_run1a, VRC01_19_log_run1a,
 
 library('ggplot2')
@@ -94,10 +94,6 @@ for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19
         simulated_means_uniform_S5F <- c()
         simulated_means_CP_S5F <- c()
         
-        spearman_coefficient_S5F_S5F <- c()
-        spearman_coefficient_uniform_S5F <- c()
-        spearman_coefficient_CP_S5F <- c()
-        
         substitution_class <- c(substitution_class, sub_type)
         metric_vector <- c(metric_vector, metric)
         lineage_vector <- c(lineage_vector, clone)
@@ -187,14 +183,24 @@ lineage_vector <- factor(lineage_vector, levels = c('CH103','CH103L','VRC26','VR
 metric_vector <- factor(metric_vector, levels = c('S5F','logS5F'))
 region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))
 
-combined_dataframe <- data.frame(lineage=lineage_vector, metric = metric_vector, region = region_vector, substitution_class, mean_contrast_true, 
-                                 mean_contrast_simulation_constrained_S5F_S5F, contrast_simulation_constrained_S5F_S5F_llim, contrast_simulation_constrained_S5F_S5F_ulim,
-                                 mean_contrast_simulation_constrained_uniform_S5F, contrast_simulation_constrained_uniform_S5F_llim, contrast_simulation_constrained_uniform_S5F_ulim,
-                                 mean_contrast_simulation_constrained_CP_S5F, contrast_simulation_constrained_CP_S5F_llim, contrast_simulation_constrained_CP_S5F_ulim,
-                                 mean_contrast_simulation_unconstrained_S5F_S5F, contrast_simulation_unconstrained_S5F_S5F_llim, contrast_simulation_unconstrained_S5F_S5F_ulim,
-                                 mean_contrast_simulation_unconstrained_uniform_S5F, contrast_simulation_unconstrained_uniform_S5F_llim, contrast_simulation_unconstrained_uniform_S5F_ulim,
-                                 mean_contrast_simulation_unconstrained_CP_S5F, contrast_simulation_unconstrained_CP_S5F_llim, contrast_simulation_unconstrained_CP_S5F_ulim
+combined_dataframe <- data.frame(lineage=lineage_vector[1:63], metric = metric_vector[1:63], region = region_vector[1:63], substitution_class[1:63], mean_contrast_true[1:63], 
+                                 mean_contrast_simulation_constrained_S5F_S5F[1:63], contrast_simulation_constrained_S5F_S5F_llim[1:63], contrast_simulation_constrained_S5F_S5F_ulim[1:63],
+                                 mean_contrast_simulation_constrained_uniform_S5F[1:63], contrast_simulation_constrained_uniform_S5F_llim[1:63], contrast_simulation_constrained_uniform_S5F_ulim[1:63],
+                                 mean_contrast_simulation_constrained_CP_S5F[1:63], contrast_simulation_constrained_CP_S5F_llim[1:63], contrast_simulation_constrained_CP_S5F_ulim[1:63],
+                                 mean_contrast_simulation_unconstrained_S5F_S5F[1:63], contrast_simulation_unconstrained_S5F_S5F_llim[1:63], contrast_simulation_unconstrained_S5F_S5F_ulim[1:63],
+                                 mean_contrast_simulation_unconstrained_uniform_S5F[1:63], contrast_simulation_unconstrained_uniform_S5F_llim[1:63], contrast_simulation_unconstrained_uniform_S5F_ulim[1:63],
+                                 mean_contrast_simulation_unconstrained_CP_S5F[1:63], contrast_simulation_unconstrained_CP_S5F_llim[1:63], contrast_simulation_unconstrained_CP_S5F_ulim[1:63]
                                  )
+
+sapply(list(substitution_class, mean_contrast_true, 
+mean_contrast_simulation_constrained_S5F_S5F, contrast_simulation_constrained_S5F_S5F_llim, contrast_simulation_constrained_S5F_S5F_ulim,
+mean_contrast_simulation_constrained_uniform_S5F, contrast_simulation_constrained_uniform_S5F_llim, contrast_simulation_constrained_uniform_S5F_ulim,
+mean_contrast_simulation_constrained_CP_S5F, contrast_simulation_constrained_CP_S5F_llim, contrast_simulation_constrained_CP_S5F_ulim,
+mean_contrast_simulation_unconstrained_S5F_S5F, contrast_simulation_unconstrained_S5F_S5F_llim, contrast_simulation_unconstrained_S5F_S5F_ulim,
+mean_contrast_simulation_unconstrained_uniform_S5F, contrast_simulation_unconstrained_uniform_S5F_llim, contrast_simulation_unconstrained_uniform_S5F_ulim,
+mean_contrast_simulation_unconstrained_CP_S5F, contrast_simulation_unconstrained_CP_S5F_llim, contrast_simulation_unconstrained_CP_S5F_ulim
+), FUN = length, USE.NAMES = TRUE)
+
                                  
 # DATAFRAME WITH SUMMED CHANGES IN MUTABILITY ACROSS THE TREE
 lineage_vector <- c()

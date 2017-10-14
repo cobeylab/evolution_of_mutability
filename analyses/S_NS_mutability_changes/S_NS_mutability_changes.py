@@ -151,7 +151,7 @@ def main(argv):
         for region in ['WS', 'FR', 'CDR']:
             for metric in ['S5F', 'logS5F']:
                 for mutability_model in ['S5F', 'uniform', 'CP']:
-                    # Mutability changes under S5F mutations/S5F transitions model
+                    # Mutability changes under mutation model / S5F-transitions model
                     output_header_sim += ',' + metric + '_' + region + '_change_' + mutability_model + 'Mut_S5FTrans_total'
                     output_header_sim += ',' + metric + '_' + region + '_change_' + mutability_model + 'Mut_S5FTrans_syn'
                     output_header_sim += ',' + metric + '_' + region + '_change_' + mutability_model + 'Mut_S5FTrans_nonsyn'

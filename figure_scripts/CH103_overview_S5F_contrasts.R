@@ -14,8 +14,8 @@ contrasts_dataframe <- read.table(contrasts_file_path, header = T, sep = ',')
 sample_size <- 100
 tree_sample <- sample(unique(contrasts_dataframe$tree), sample_size, replace = F)
 
-pl <- ggplot(contrasts_dataframe, aes(x = S5F_WS_contrast)) +
-  xlab('Change in S5F mutability') +
+pl <- ggplot(contrasts_dataframe, aes(x = log_S5F_WS_contrast)) +
+  xlab('Change in mean log-S5F mutability') +
   ylab('Density') +
   ggplot_theme + 
   scale_y_continuous(expand = c(0,0), limits = c(0,80))
@@ -23,7 +23,7 @@ pl <- ggplot(contrasts_dataframe, aes(x = S5F_WS_contrast)) +
 for(tree in tree_sample){
 
   x <- contrasts_dataframe[contrasts_dataframe$tree == tree,
-                            'S5F_WS_contrast']
+                            'log_S5F_WS_contrast']
   
   temp_dataframe <- data.frame(x)
   
@@ -45,7 +45,7 @@ fraction_negative <- c()
 for(tree in unique(contrasts_dataframe$tree)[1:1000]){
     
   x <- contrasts_dataframe[contrasts_dataframe$tree == tree,
-                                'S5F_WS_contrast']
+                                'log_S5F_WS_contrast']
 
   contrast_means <- c(contrast_means, mean(x))
 
@@ -106,7 +106,7 @@ vp <- viewport(width = 0.38, height = 0.38, x = 0.185,
                y = unit(8.5, "lines"), just = c("left",
                                                "bottom"))
   
-pdf('CH103_overview_S5F_contrasts.pdf', width=3.43, height = 3)
+pdf('CH103_overview_logS5F_contrasts.pdf', width=3.43, height = 3)
   plot(pl)
   plot(subpl, vp = vp)
 dev.off()

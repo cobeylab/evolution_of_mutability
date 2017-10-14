@@ -103,10 +103,15 @@ def main(argv):
             for metric in ['S5F','7M','HS','CS','OHS','geom_S5F']:
                 mutability_output_header += ',' + metric + '_' + region + '_parent'
 
-        # For S5F only, changes partitioned into syn. and non-syn.
+        # For mean S5F and mean log-S5F only, changes partitioned into syn. and non-syn.
         mutability_output_header += ',S5F_WS_contrast_syn,S5F_WS_contrast_nonsyn,'
         mutability_output_header += 'S5F_FR_contrast_syn,S5F_FR_contrast_nonsyn,'
         mutability_output_header += 'S5F_CDR_contrast_syn,S5F_CDR_contrast_nonsyn,'
+
+        mutability_output_header += 'log_S5F_WS_contrast_syn,log_S5F_WS_contrast_nonsyn,'
+        mutability_output_header += 'log_S5F_FR_contrast_syn,log_S5F_FR_contrast_nonsyn,'
+        mutability_output_header += 'log_S5F_CDR_contrast_syn,log_S5F_CDR_contrast_nonsyn,'
+
 
         mutability_output_header += 'parent_distance,parent_distance_RC,parent_time\n'
 
@@ -355,26 +360,25 @@ def main(argv):
                                     mutability_line += str(parent_mutability) + ','
 
 
-                            # For S5F only, add changes partitioned into syn. and non-syn. changes
-                            S5F_contrast_WS_syn = sequence_differences(parent_node_sequence,node_sequence,
-                                                                       partition_points)['mutability_change_syn']
-                            S5F_contrast_WS_nonsyn = sequence_differences(parent_node_sequence,node_sequence,
-                                                                          partition_points)['mutability_change_nonsyn']
+                            # For S5F and mean log-S5F only, record changes partitioned into syn. and non-syn. changes:
 
-                            S5F_contrast_FR_syn = sequence_differences(parent_node_sequence, node_sequence,
-                                                                       partition_points)['mutability_change_syn_FR']
-                            S5F_contrast_FR_nonsyn = sequence_differences(parent_node_sequence, node_sequence,
-                                                                       partition_points)['mutability_change_nonsyn_FR']
+                            partitioned_diffs = sequence_differences(parent_node_sequence,node_sequence,
+                                                                       partition_points)
 
-                            S5F_contrast_CDR_syn = sequence_differences(parent_node_sequence, node_sequence,
-                                                                       partition_points)['mutability_change_syn_CDR']
-                            S5F_contrast_CDR_nonsyn = sequence_differences(parent_node_sequence, node_sequence,
-                                                                      partition_points)['mutability_change_nonsyn_CDR']
+                            for metric in ['S5F','log_S5F']:
+                                metric_id = {'S5F': 'mutability_change', 'log_S5F': 'log_mutability_change'}[metric]
 
-                            mutability_line += str(S5F_contrast_WS_syn) + ',' + str(S5F_contrast_WS_nonsyn) + ','
-                            mutability_line += str(S5F_contrast_FR_syn) + ',' + str(S5F_contrast_FR_nonsyn) + ','
-                            mutability_line += str(S5F_contrast_CDR_syn) + ',' + str(S5F_contrast_CDR_nonsyn) + ','
+                                for region in ['WS','FR','CDR']:
+                                    region_id = {'WS':'','FR':'_FR','CDR':'_CDR'}[region]
 
+                                    for subst_class in ['syn','nonsyn']:
+
+                                        change = partitioned_diffs[metric_id + '_' + subst_class + region_id]
+
+                                        mutability_line += str(change) + ','
+
+
+                            #Add parent distance and time
                             mutability_line += ','.join([str(parent_to_root_distance), str(parent_to_root_distance_RC),
                                                          str(parent_time)])
                             mutability_line += '\n'

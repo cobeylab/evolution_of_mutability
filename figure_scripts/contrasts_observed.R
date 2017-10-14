@@ -257,7 +257,7 @@ pl_S5F <- base_plot +
   facet_grid(.~region, labeller = labeller(region=region_names)) + 
   theme(strip.text.x = element_text(size = 12))
   
-pdf('contrasts_observed.pdf', width = 7.01, height = 3.43)
+pdf('contrasts_observed_S5F.pdf', width = 7.01, height = 3.43)
 plot(pl_S5F)
 dev.off()
 
@@ -274,7 +274,7 @@ pl_logS5F <- base_plot +
   facet_grid(.~region, labeller = labeller(region=region_names)) + 
   theme(strip.text.x = element_text(size = 12))
 
-pdf('geom_and_log_S5F_plots/contrasts_observed_logS5F.pdf', width = 7.01, height = 3.43)
+pdf('contrasts_observed_logS5F.pdf', width = 7.01, height = 3.43)
 plot(pl_logS5F)
 dev.off()
 
