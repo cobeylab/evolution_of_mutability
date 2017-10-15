@@ -64,9 +64,6 @@ for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01
         mutability <- c(mutability,
                         clone_dataframe[clone_dataframe$sequence_id == 'Node_0',
                                         paste('randomized_',metric,'_',region,'_allsites',sep='')]) 
-        
-        print(length(mutability))
-      
       }
    }
 }
@@ -119,12 +116,12 @@ global_observed_dataframe <- data.frame(lineage=lineage, metric=metric_vector, r
 
 
 # Plot
-  pl <- ggplot(data = subset(global_randomized_dataframe, metric == 'S5F'), 
+  pl <- ggplot(data = subset(global_randomized_dataframe, metric == 'geomS5F'), 
                aes(x=lineage,y=mutability)) + 
     #scale_y_continuous(expand = c(0,0), limits = c(0,1)) + 
     theme_bw() +
     #theme_classic() + 
-    ylab('Mean S5F mutability') + 
+    ylab('Geometric mean of S5F mutability') + 
     xlab('Lineage') +
     theme(axis.title.y = element_text(size = axis_title_size,
                                       margin = margin(0,ylab_distance,0,0)),
@@ -151,7 +148,7 @@ global_observed_dataframe <- data.frame(lineage=lineage, metric=metric_vector, r
 
     # Add observed value for each lineage, metric and region
     
-    pl <- pl + geom_point(data=subset(global_observed_dataframe, metric == 'S5F'),
+    pl <- pl + geom_point(data=subset(global_observed_dataframe, metric == 'geomS5F'),
                                aes(y=mutability),
                                shape = 22,
                                fill = 'firebrick1',
@@ -178,17 +175,25 @@ global_observed_dataframe <- data.frame(lineage=lineage, metric=metric_vector, r
   pl <- pl + scale_x_discrete(labels=x_labels)
   
   ####
-  pdf('ancestral_vs_randomized_S5F.pdf',width=10,height=5)
+  pdf('relative_ancestral_mutability.pdf',width=10,height=5)
   plot(pl)
   dev.off()
   ####
 
-  # CDR / FR ratios:
-  ratios <- subset(global_observed_dataframe, metric == 'S5F' & region == 'CDR')$mutability / subset(global_observed_dataframe, metric == 'S5F' & region == 'FR')$mutability -1
+  # CDR FR difference in mean log S5F
+  mean_logS5F_CDR <- log(subset(global_observed_dataframe, metric == 'geomS5F' & region == 'CDR')$mutability)
+  mean_logS5F_FR <- log(subset(global_observed_dataframe, metric == 'geomS5F' & region == 'FR')$mutability)
   
-  mean(ratios)
-  max(ratios)
-  min(ratios)
+  mean(mean_logS5F_CDR - mean_logS5F_FR)
+  
+  
+  
+  # CDR / FR ratios:
+  #ratios <- subset(global_observed_dataframe, metric == 'S5F' & region == 'CDR')$mutability / subset(global_observed_dataframe, metric == 'S5F' & region == 'FR')$mutability -1
+  
+  #mean(ratios)
+  #max(ratios)
+  #min(ratios)
   
   percentiles_CDR <- subset(global_observed_dataframe,  metric == 'S5F' & region == 'CDR')$percentile
   percentiles_FR <- subset(global_observed_dataframe,  metric == 'S5F' & region == 'FR')$percentile

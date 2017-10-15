@@ -43,12 +43,12 @@ with open('human_codon_frequencies.csv','r') as codon_freq_file:
 
     # Normalize so that freqs for each aa sum to 1 (some do not probably because of rounding error in the authors' report)
     for aa in codon_freqs.keys():
-        sum = 0
+        freq_sum = 0
         for codon in codon_freqs[aa].keys():
-            sum = sum + float(codon_freqs[aa][codon])
+            freq_sum = freq_sum + float(codon_freqs[aa][codon])
 
         for codon in codon_freqs[aa].keys():
-            codon_freqs[aa][codon] = float(codon_freqs[aa][codon])/sum
+            codon_freqs[aa][codon] = float(codon_freqs[aa][codon])/freq_sum
 
 
 def main(argv):
@@ -161,7 +161,7 @@ def main(argv):
         alignment_id = alignment_id.replace('&', '').replace('.CP1', '')
 
         # Annotations that will be kept in the edited tree string
-        variables = [alignment_id + '.CP1', alignment_id + '.CP2', alignment_id + '.CP3']
+        variables = [alignment_id + '.CP1', alignment_id + '.CP2', alignment_id + '.CP3','rate', 'length']
 
         for block in annotation_blocks:
 
@@ -211,13 +211,13 @@ def main(argv):
 
         # ====================================== WRITE OUTPUT FILES HEADERS ============================================
 
-        output_file_obs.write('sequence_id,time_from_root,')
+        output_file_obs.write('sequence_id,time_from_root,distance_to_root')
 
         output_file_obs.write('observed_S5F_WS,observed_7M_WS,observed_HS_WS,observed_CS_WS,observed_OHS_WS,observed_logS5F_WS, observed_geomS5F_WS,')
         output_file_obs.write('observed_S5F_FR,observed_7M_FR,observed_HS_FR,observed_CS_FR,observed_OHS_FR,observed_logS5F_FR, observed_geomS5F_FR,')
         output_file_obs.write('observed_S5F_CDR,observed_7M_CDR,observed_HS_CDR,observed_CS_CDR,observed_OHS_CDR,observed_logS5F_CDR, observed_geomS5F_CDR\n')
         
-        output_file_random.write('sequence_id,time_from_root,')
+        output_file_random.write('sequence_id,time_from_root,distance_to_root')
 
         output_file_random.write('randomized_S5F_WS_allsites,randomized_7M_WS_allsites,randomized_HS_WS_allsites,randomized_CS_WS_allsites,randomized_OHS_WS_allsites,randomized_logS5F_WS_allsites,randomized_geomS5F_WS_allsites,')
         output_file_random.write('randomized_S5F_FR_allsites,randomized_7M_FR_allsites,randomized_HS_FR_allsites,randomized_CS_FR_allsites,randomized_OHS_FR_allsites,randomized_logS5F_FR_allsites,randomized_geomS5F_FR_allsites,')
@@ -295,9 +295,25 @@ def main(argv):
                 if node == tree._get_seed_node():
                     ancestral_aa_seq = original_aa_seq
 
+                # To find node's distance from root, get times and rates for all branches connecting it to the root
+                node_to_root_time_lengths = [0.0]
+                node_to_root_rates = [0.0]
+
+                focal_node = node
+
+                # Move down the tree to the root node
+                while focal_node is not tree.nodes()[0]:
+                    node_to_root_time_lengths.append(focal_node.edge_length)
+                    node_to_root_rates.append(float(focal_node.annotations.get_value('rate')))
+                    focal_node = focal_node.parent_node
+
+                assert sum(node_to_root_time_lengths) == seq_time_from_root
+
+                # Find node's distance to the root by multiplying molecular clock rates and time lengths, then summing
+                node_to_root_distance = sum([node_to_root_time_lengths[i] * node_to_root_rates[i] for i in range(len(node_to_root_rates))])
 
                 # Write observed mutability results
-                output_file_obs.write(node_id + ',' + str(seq_time_from_root) + ',')
+                output_file_obs.write(node_id + ',' + str(seq_time_from_root) + ',' + str(node_to_root_distance) + ',')
 
                 output_file_obs.write(str(observed_mutability_WS[1]['mean_S5F']) + ',')
                 output_file_obs.write(str(observed_mutability_WS[1]['mean_7M']) + ',')
@@ -338,7 +354,7 @@ def main(argv):
                 # For 1000 replicates:
                 for i in range(1000):
 
-                    output_file_random.write(node_id + ',' + str(seq_time_from_root) + ',')
+                    output_file_random.write(node_id + ',' + str(seq_time_from_root) + ',' + str(node_to_root_distance) + ',')
 
                     # Generate empty randomized sequences:
                     randomized_sequences = {}

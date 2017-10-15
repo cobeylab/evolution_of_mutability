@@ -6,7 +6,7 @@ library('coda')
 library('lattice')
 library('gridBase')
 
-results_directory <- '../../results/relative_mutability/observed_lineages/'
+results_directory <- '../results/relative_mutability/observed_lineages/'
 
 # ======= GET DATAFRAMES WITH OBSERVED MUTABILITY FOR ALL LINEAGES
 
@@ -41,25 +41,11 @@ CH103_observed_dataframe <- read.table(paste(results_directory, 'CH103_constant/
                                    'VRC01_19' = VRC01_19_randomized_dataframe)
   
 
-# ================ DEFINING GGPLOT2 PARAMETERS ===============
+# ================ IMPORTING GGPLOT2 PARAMETERS ===============
+source('ggplot_parameters.R')
+  
 
-{
-  title_size <- 20
-  axis_title_size <- 22
-  y_axis_text_size <- 16
-  x_axis_text_size <- 10
-  
-  axis_title_size_subplot <- 20
-  y_axis_text_size_subplot <- 15
-  x_axis_text_size_subplot <- 16
-  
-  ylab_distance <- 20
-  xlab_distance <- 22
-  plot_margins <- c(0.3, 1, 0.3, 2)
-  
-}
-
-# ==== MAKE GLOBAL DATAFRAME WITH FR AND CDR S5F-MUTABILITY PERCENTILES FOR SEQUENCES AT THE LAST TIME POINT, FOR ALL LINEAGES ====
+# ==== MAKE GLOBAL DATAFRAME WITH FR AND CDR geomS5F-MUTABILITY PERCENTILES FOR SEQUENCES AT THE LAST TIME POINT, FOR ALL LINEAGES ====
 lineage <- c()
 region_vector <- c()
 max_time <- c()
@@ -80,8 +66,8 @@ for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01
   for(node in clone_dataframe_obs$sequence_id){
     for(region in c('FR','CDR')){
       
-      observed <- clone_dataframe_obs[clone_dataframe_obs$sequence_id == node, paste('observed_S5F_',region,sep='')]
-      randomized <- clone_dataframe_rdm[clone_dataframe_rdm$sequence_id == node, paste('randomized_S5F_',region, '_allsites',sep='')]
+      observed <- clone_dataframe_obs[clone_dataframe_obs$sequence_id == node, paste('observed_geomS5F_',region,sep='')]
+      randomized <- clone_dataframe_rdm[clone_dataframe_rdm$sequence_id == node, paste('randomized_geomS5F_',region, '_allsites',sep='')]
       
       
       lineage <- c(lineage, clone)
@@ -116,14 +102,11 @@ for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01
   clone_dataframe_obs <- observed_dataframe_list[[clone]]
   clone_dataframe_rdm <- randomized_dataframe_list[[clone]]
   
-  #percents_FR <- c()
-  #percents_CDR <- c()
-  
   for(node in c('Node_0')){
     for(region in c('FR','CDR')){
       
-      observed <- clone_dataframe_obs[clone_dataframe_obs$sequence_id == node, paste('observed_S5F_',region,sep='')]
-      randomized <- clone_dataframe_rdm[clone_dataframe_rdm$sequence_id == node, paste('randomized_S5F_',region, '_allsites',sep='')]
+      observed <- clone_dataframe_obs[clone_dataframe_obs$sequence_id == node, paste('observed_geomS5F_',region,sep='')]
+      randomized <- clone_dataframe_rdm[clone_dataframe_rdm$sequence_id == node, paste('randomized_geomS5F_',region, '_allsites',sep='')]
       
       
       lineage <- c(lineage, clone)
@@ -152,7 +135,7 @@ combined_dataframe_ancestor <- data.frame(lineage, region = region_vector, ances
 
 
 # PLOT
-  pl <- ggplot(data = combined_dataframe, 
+pl <- ggplot(data = combined_dataframe, 
                aes(x=lineage,y=percentile)) + 
     #scale_y_continuous(expand = c(0,0), limits = c(0,1)) + 
     theme_bw() +
@@ -202,27 +185,27 @@ combined_dataframe_ancestor <- data.frame(lineage, region = region_vector, ances
   }
   pl <- pl + scale_x_discrete(labels=x_labels)
   
-  ####
-  pdf('relative_mutability_last_time_point.pdf',width=10,height=7)
-  plot(pl)
-  dev.off()
-  ####
+####
+pdf('relative_mutability_last_time_point.pdf',width=10,height=7)
+plot(pl)
+dev.off()
+####
 
-  FR_percentiles <- c()
-  CDR_percentiles <- c()
-  for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_13','VRC01_01','VRC01_19')){
-    FR_percent <- subset(combined_dataframe, region == 'FR' & lineage == clone)$percentile
-    FR_percentiles <- c(FR_percentiles, mean(FR_percent))
+FR_percentiles <- c()
+CDR_percentiles <- c()
+for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_13','VRC01_01','VRC01_19')){
+  FR_percent <- subset(combined_dataframe, region == 'FR' & lineage == clone)$percentile
+  FR_percentiles <- c(FR_percentiles, mean(FR_percent))
     
-    CDR_percent <- subset(combined_dataframe, region == 'CDR' & lineage == clone)$percentile
-    CDR_percentiles <- c(CDR_percentiles, mean(CDR_percent))
-  }
+  CDR_percent <- subset(combined_dataframe, region == 'CDR' & lineage == clone)$percentile
+  CDR_percentiles <- c(CDR_percentiles, mean(CDR_percent))
+}
   
-  mean(FR_percentiles)
-  max(FR_percentiles)
-  min(FR_percentiles)
+mean(FR_percentiles)
+max(FR_percentiles)
+min(FR_percentiles)
   
-  mean(CDR_percentiles)
+mean(CDR_percentiles)
   max(CDR_percentiles)
   min(CDR_percentiles)
   

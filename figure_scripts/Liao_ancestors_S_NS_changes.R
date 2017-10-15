@@ -59,14 +59,15 @@ base_plot <- function(results_dataframe, region, metric){
     
     geom_text(data = data.frame(x=0.5,y=-0.15, text='Number of differences'), 
               aes(x = x, y = y,label = text), hjust = -0.1, size = 3.5) +
-    theme(axis.text.x = element_text(size = 9),
-          legend.position = 'top') +
-    scale_x_discrete(labels = gsub('-','-\n',gsub('_VH','',levels(results_dataframe$pair))),
+    #theme(axis.text.x = element_text(size = 9),
+    #      legend.position = 'top') +
+    scale_x_discrete(labels = gsub('-','\n-\n',gsub('_VH','',levels(results_dataframe$pair))),
                      expand = c(0,0)) +
     scale_fill_manual(name = '', values = c('gray80','gray40'),
                       labels = c('Synonymous  ','Non-synonynous' )) +
     scale_colour_manual(name = '', values = c('gray80','gray40'),
-                        labels = c('Synonymous  ','Non-synonynous' ))
+                        labels = c('Synonymous  ','Non-synonynous' )) +
+    theme(axis.text.x = element_text(size = 9))
   
   return(pl)
   

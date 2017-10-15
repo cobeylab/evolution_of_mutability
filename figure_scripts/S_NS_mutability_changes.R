@@ -69,7 +69,6 @@ for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19
   for(region in c('WS','FR','CDR')){  
     clone_dataframe_obs <- dataframe_list_obs[[clone]]
     
-    #for(metric in c('S5F','HS','OHS')){
     for(metric in c('S5F', 'logS5F')){
       for(sub_type in c('total','syn_only','nonsyn_only')){
           
@@ -183,23 +182,14 @@ lineage_vector <- factor(lineage_vector, levels = c('CH103','CH103L','VRC26','VR
 metric_vector <- factor(metric_vector, levels = c('S5F','logS5F'))
 region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))
 
-combined_dataframe <- data.frame(lineage=lineage_vector[1:63], metric = metric_vector[1:63], region = region_vector[1:63], substitution_class[1:63], mean_contrast_true[1:63], 
-                                 mean_contrast_simulation_constrained_S5F_S5F[1:63], contrast_simulation_constrained_S5F_S5F_llim[1:63], contrast_simulation_constrained_S5F_S5F_ulim[1:63],
-                                 mean_contrast_simulation_constrained_uniform_S5F[1:63], contrast_simulation_constrained_uniform_S5F_llim[1:63], contrast_simulation_constrained_uniform_S5F_ulim[1:63],
-                                 mean_contrast_simulation_constrained_CP_S5F[1:63], contrast_simulation_constrained_CP_S5F_llim[1:63], contrast_simulation_constrained_CP_S5F_ulim[1:63],
-                                 mean_contrast_simulation_unconstrained_S5F_S5F[1:63], contrast_simulation_unconstrained_S5F_S5F_llim[1:63], contrast_simulation_unconstrained_S5F_S5F_ulim[1:63],
-                                 mean_contrast_simulation_unconstrained_uniform_S5F[1:63], contrast_simulation_unconstrained_uniform_S5F_llim[1:63], contrast_simulation_unconstrained_uniform_S5F_ulim[1:63],
-                                 mean_contrast_simulation_unconstrained_CP_S5F[1:63], contrast_simulation_unconstrained_CP_S5F_llim[1:63], contrast_simulation_unconstrained_CP_S5F_ulim[1:63]
+combined_dataframe <- data.frame(lineage=lineage_vector, metric = metric_vector, region = region_vector, substitution_class, mean_contrast_true, 
+                                 mean_contrast_simulation_constrained_S5F_S5F, contrast_simulation_constrained_S5F_S5F_llim, contrast_simulation_constrained_S5F_S5F_ulim,
+                                 mean_contrast_simulation_constrained_uniform_S5F, contrast_simulation_constrained_uniform_S5F_llim, contrast_simulation_constrained_uniform_S5F_ulim,
+                                 mean_contrast_simulation_constrained_CP_S5F, contrast_simulation_constrained_CP_S5F_llim, contrast_simulation_constrained_CP_S5F_ulim,
+                                 mean_contrast_simulation_unconstrained_S5F_S5F, contrast_simulation_unconstrained_S5F_S5F_llim, contrast_simulation_unconstrained_S5F_S5F_ulim,
+                                 mean_contrast_simulation_unconstrained_uniform_S5F, contrast_simulation_unconstrained_uniform_S5F_llim, contrast_simulation_unconstrained_uniform_S5F_ulim,
+                                 mean_contrast_simulation_unconstrained_CP_S5F, contrast_simulation_unconstrained_CP_S5F_llim, contrast_simulation_unconstrained_CP_S5F_ulim
                                  )
-
-sapply(list(substitution_class, mean_contrast_true, 
-mean_contrast_simulation_constrained_S5F_S5F, contrast_simulation_constrained_S5F_S5F_llim, contrast_simulation_constrained_S5F_S5F_ulim,
-mean_contrast_simulation_constrained_uniform_S5F, contrast_simulation_constrained_uniform_S5F_llim, contrast_simulation_constrained_uniform_S5F_ulim,
-mean_contrast_simulation_constrained_CP_S5F, contrast_simulation_constrained_CP_S5F_llim, contrast_simulation_constrained_CP_S5F_ulim,
-mean_contrast_simulation_unconstrained_S5F_S5F, contrast_simulation_unconstrained_S5F_S5F_llim, contrast_simulation_unconstrained_S5F_S5F_ulim,
-mean_contrast_simulation_unconstrained_uniform_S5F, contrast_simulation_unconstrained_uniform_S5F_llim, contrast_simulation_unconstrained_uniform_S5F_ulim,
-mean_contrast_simulation_unconstrained_CP_S5F, contrast_simulation_unconstrained_CP_S5F_llim, contrast_simulation_unconstrained_CP_S5F_ulim
-), FUN = length, USE.NAMES = TRUE)
 
                                  
 # DATAFRAME WITH SUMMED CHANGES IN MUTABILITY ACROSS THE TREE
@@ -315,23 +305,32 @@ total_changes_plot <- function(metric){
   return(pl)
 }
 
-total_changes_plot_S5F <- total_changes_plot('S5F')
+# Cumulative changes inferred for the 5 lineages
 total_changes_plot_logS5F <- total_changes_plot('logS5F')
 
-pdf('geom_and_log_S5F_plots/S_NS_total_changes_logS5F.pdf', height = 5, width = 8)
-  plot(total_changes_plot_logS5F)
-dev.off()
+# Importing plot with results for Liao ancestors
+source('Liao_ancestors_S_NS_changes.R')
+
+cumulative_changes_pl <- plot_grid(total_changes_plot_logS5F, Liao_CDR_logS5F_changes_pl,
+                                   nrow = 2)
+
+save_plot("cumulative_S_NS_mutability_changes.pdf", cumulative_changes_pl,
+          base_height = 10, base_width = 9
+)
+
+
 
 # =======================  BRANCH-LEVEL CHANGES IN MUTABILITY DUE - DATA VS. MODELS  =========================
 # Basic plotting function
-base_plot <- function(dataframe, substitution_class, region, simulation_type, ylims = c(-0.03,0.03)){
+base_plot <- function(dataframe, substitution_class, region, simulation_type, ylims = c(-0.01,0.01)){
   
-  dataframe <- dataframe[dataframe$substitution_class == substitution_class & dataframe$region == region,]
+  dataframe <- dataframe[dataframe$substitution_class == substitution_class & dataframe$region == region &
+                           dataframe$metric == 'logS5F',]
   
   ylabel_subst_class <- switch(substitution_class,
-                               syn_only = 'Synonymous change in mutability',
-                               nonsyn_only = 'Non-synonymous change in mutability',
-                               total = 'Total change in mutability')
+                               syn_only = 'Synonymous change in mean log-S5F mutability',
+                               nonsyn_only = 'Non-synonymous change in mean log-S5F mutability',
+                               total = 'Total change in mean log S5F-mutability')
   
   # Generate dataframe to pass to ggplot
   ggplot_dataframe <- data.frame(lineage = dataframe$lineage, mean_contrast_true = dataframe$mean_contrast_true,
@@ -409,36 +408,21 @@ base_plot <- function(dataframe, substitution_class, region, simulation_type, yl
 }
 
 # Changes compared to aa-unconstrained simulations
-pl_syn_WS_unconstrained <- base_plot(combined_dataframe, substitution_class = 'syn_only', region = 'WS',
-                                     simulation_type = 'unconstrained', ylims = c(-0.03,0.02))
-pl_nonsyn_WS_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'WS',
-                                        simulation_type = 'unconstrained', ylims = c(-0.03,0.02))
 pl_syn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'syn_only', region = 'FR',
-                                     simulation_type = 'unconstrained', ylims = c(-0.03,0.02))
+                                     simulation_type = 'unconstrained', ylims = c(-0.03,0.01))
 pl_nonsyn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'FR',
-                                        simulation_type = 'unconstrained', ylims = c(-0.03,0.02))
+                                        simulation_type = 'unconstrained', ylims = c(-0.03,0.01))
 pl_syn_CDR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'syn_only', region = 'CDR',
                                      simulation_type = 'unconstrained', ylims = c(-0.035,0.01))
 pl_nonsyn_CDR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'CDR',
                                         simulation_type = 'unconstrained', ylims = c(-0.035,0.01))
 
-unconstrained_plot <- plot_grid(pl_syn_WS_unconstrained, pl_nonsyn_WS_unconstrained,
-                                pl_syn_FR_unconstrained, pl_nonsyn_FR_unconstrained, 
-                                 pl_syn_CDR_unconstrained, pl_nonsyn_CDR_unconstrained, 
-                                labels = c("Whole sequence", "","FRs","","CDRs",""), 
-                                label_size = 15, nrow =3, hjust = 0)
+unconstrained_plot <- plot_grid(pl_syn_FR_unconstrained, pl_nonsyn_FR_unconstrained, 
+                                pl_syn_CDR_unconstrained, pl_nonsyn_CDR_unconstrained, 
+                                labels = c("FRs","","CDRs",""), 
+                                label_size = 15, nrow =2, hjust = 0)
 
-save_plot('randomization_figures/unconstrained.pdf',
+save_plot('S_NS_changes_randomizations.pdf',
           unconstrained_plot,
-          base_height = 18, base_width = 14
-          )
-
-
-# ================================================ COMBINING PLOTS ====================================================
-#combined_plot <- plot_grid(total_changes_pl, pl_syn, pl_nonsyn_FR, pl_nonsyn_CDR, 
-#                           labels = c("a)", "b)","c)","d)"),
-#                           label_size = 20, nrow =2)
-print('WARNING: PLOT NOT SAVED')
-#save_plot("S_NS_mutability_changes.pdf", combined_plot,
-#          base_height = 10, base_width = 14
-#)
+          base_height = 12, base_width = 14
+)
