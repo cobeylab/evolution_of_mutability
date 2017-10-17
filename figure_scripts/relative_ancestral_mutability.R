@@ -1,118 +1,118 @@
-# Produces figure for the manuscript showing the mutability of the inferred ancestral sequence for chain "con_run1a" of each lineage, together with the distribution of mutability values we get by randomizing that sequence while keeping the amino acid sequence constant".
-library('ggplot2')
-library('reshape')
-library('gridExtra')
-library('grid')
-library('coda')
-library('lattice')
-library('cowplot')
-
-results_directory <- '../results/relative_mutability/observed_lineages/'
-
-# ======= GET DATAFRAMES WITH OBSERVED MUTABILITY FOR ALL LINEAGES
-
-CH103_observed_dataframe <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-CH103L_observed_dataframe <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26int_observed_dataframe <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26L_observed_dataframe <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_01_observed_dataframe <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_13_observed_dataframe <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_19_observed_dataframe <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  # Produces figure for the manuscript showing the mutability of the inferred ancestral sequence for chain "con_run1a" of each lineage, together with the distribution of mutability values we get by randomizing that sequence while keeping the amino acid sequence constant".
+  library('ggplot2')
+  library('reshape')
+  library('gridExtra')
+  library('grid')
+  library('coda')
+  library('lattice')
+  library('cowplot')
+  
+  results_directory <- '../results/relative_mutability/observed_lineages/'
+  
+  # ======= GET DATAFRAMES WITH OBSERVED MUTABILITY FOR ALL LINEAGES
+  
+  CH103_observed_dataframe <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  CH103L_observed_dataframe <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC26int_observed_dataframe <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC26L_observed_dataframe <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC01_01_observed_dataframe <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC01_13_observed_dataframe <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC01_19_observed_dataframe <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+    
+    
+  observed_dataframe_list <- list('CH103' = CH103_observed_dataframe, 'CH103L' = CH103L_observed_dataframe,
+                                  'VRC26int' = VRC26int_observed_dataframe, 'VRC26L' = VRC26L_observed_dataframe,
+                                  'VRC01_01' = VRC01_01_observed_dataframe, 'VRC01_13' = VRC01_13_observed_dataframe,
+                                  'VRC01_19' = VRC01_19_observed_dataframe)
+    
+    
+    #  ======= GET DATAFRAMES WITH RANDOMIZED MUTABILITY FOR ALL LINEAGES
+  CH103_randomized_dataframe <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  CH103L_randomized_dataframe <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC26int_randomized_dataframe <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC26L_randomized_dataframe <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC01_01_randomized_dataframe <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC01_13_randomized_dataframe <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+  VRC01_19_randomized_dataframe <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
+    
+    
+  randomized_dataframe_list <- list('CH103' = CH103_randomized_dataframe, 'CH103L' = CH103L_randomized_dataframe,
+                                   'VRC26int' = VRC26int_randomized_dataframe, 'VRC26L' = VRC26L_randomized_dataframe,
+                                   'VRC01_01' = VRC01_01_randomized_dataframe, 'VRC01_13' = VRC01_13_randomized_dataframe,
+                                   'VRC01_19' = VRC01_19_randomized_dataframe)
+    
+  
+  # ================ IMPORTING GGPLOT2 PARAMETERS ===============
+  source('ggplot_parameters.R')
   
   
-observed_dataframe_list <- list('CH103' = CH103_observed_dataframe, 'CH103L' = CH103L_observed_dataframe,
-                                'VRC26int' = VRC26int_observed_dataframe, 'VRC26L' = VRC26L_observed_dataframe,
-                                'VRC01_01' = VRC01_01_observed_dataframe, 'VRC01_13' = VRC01_13_observed_dataframe,
-                                'VRC01_19' = VRC01_19_observed_dataframe)
+  # ==== MAKE GLOBAL DATAFRAME WITH RANDOMIZED ANCESTRAL VALUES FOR EACH LINEAGE, REPLICATE, REGION AND METRIC (FOR VIOLIN PLOTS)
+  lineage <- c()
+  metric_vector <- c()
+  region_vector <- c()
+  mutability <- c()
   
-  
-  #  ======= GET DATAFRAMES WITH RANDOMIZED MUTABILITY FOR ALL LINEAGES
-CH103_randomized_dataframe <- read.table(paste(results_directory, 'CH103_constant/CH103_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-CH103L_randomized_dataframe <- read.table(paste(results_directory, 'CH103L_constant/CH103L_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26int_randomized_dataframe <- read.table(paste(results_directory, 'VRC26int_constant/VRC26int_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC26L_randomized_dataframe <- read.table(paste(results_directory, 'VRC26L_constant/VRC26L_con_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_01_randomized_dataframe <- read.table(paste(results_directory, 'VRC01_01_logistic/VRC01_01_log_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_13_randomized_dataframe <- read.table(paste(results_directory, 'VRC01_13_logistic/VRC01_13_log_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-VRC01_19_randomized_dataframe <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_randomized_mutability_MCC.csv', sep = ''), header = T, sep = ',')
-  
-  
-randomized_dataframe_list <- list('CH103' = CH103_randomized_dataframe, 'CH103L' = CH103L_randomized_dataframe,
-                                 'VRC26int' = VRC26int_randomized_dataframe, 'VRC26L' = VRC26L_randomized_dataframe,
-                                 'VRC01_01' = VRC01_01_randomized_dataframe, 'VRC01_13' = VRC01_13_randomized_dataframe,
-                                 'VRC01_19' = VRC01_19_randomized_dataframe)
-  
-
-# ================ IMPORTING GGPLOT2 PARAMETERS ===============
-source('ggplot_parameters.R')
-
-
-# ==== MAKE GLOBAL DATAFRAME WITH RANDOMIZED ANCESTRAL VALUES FOR EACH LINEAGE, REPLICATE, REGION AND METRIC (FOR VIOLIN PLOTS)
-lineage <- c()
-metric_vector <- c()
-region_vector <- c()
-mutability <- c()
-
-for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01_19')){
-  clone_dataframe <- randomized_dataframe_list[[clone]]
-  print(clone)
-  for(metric in c('S5F','HS','OHS','geomS5F')){
-    for(region in c('WS','FR','CDR')){
-        lineage <- c(lineage, rep(clone, sum(clone_dataframe$sequence_id == 'Node_0')))
-        metric_vector <- c(metric_vector, rep(metric, sum(clone_dataframe$sequence_id == 'Node_0')))
-        region_vector <- c(region_vector, rep(region, sum(clone_dataframe$sequence_id == 'Node_0')))
-
-        mutability <- c(mutability,
-                        clone_dataframe[clone_dataframe$sequence_id == 'Node_0',
-                                        paste('randomized_',metric,'_',region,'_allsites',sep='')]) 
-      }
-   }
-}
-lineage <- factor(lineage, levels = c('CH103','CH103L','VRC26int','VRC26L','VRC01_13',
-                                           'VRC01_01','VRC01_19'))
-metric_vector <- factor(metric_vector, levels = c('S5F','HS','OHS','geomS5F'))
-region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))  
-  
-global_randomized_dataframe <- data.frame(lineage=lineage, metric=metric_vector, region=region_vector, mutability=mutability)
-
-# ==== MAKE GLOBAL DATAFRAME WITH OBSERVED VALUE FOR EACH LINEAGE, REPLICATE, REGION AND METRIC (FOR VIOLIN PLOTS)
-lineage <- c()
-metric_vector <- c()
-region_vector <- c()
-mutability <- c()
-percentile <- c()
-
-for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01_19')){
-  clone_dataframe <- observed_dataframe_list[[clone]]
+  for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01_19')){
+    clone_dataframe <- randomized_dataframe_list[[clone]]
+    print(clone)
     for(metric in c('S5F','HS','OHS','geomS5F')){
       for(region in c('WS','FR','CDR')){
-        
-        lineage <- c(lineage, clone)
-        metric_vector <- c(metric_vector, metric)
-        region_vector <- c(region_vector, region)
-        
-        obs_mutability <-  clone_dataframe[clone_dataframe$sequence_id == 'Node_0',
-                                           paste('observed_',metric,'_',region,sep='')]
-        
-        mutability <- c(mutability, obs_mutability)
-        
-        randomized_values <- global_randomized_dataframe$mutability[global_randomized_dataframe$lineage == clone &
-                                                                    global_randomized_dataframe$metric == metric &
-                                                                    global_randomized_dataframe$region == region]
-        
-        percentile <- c(percentile, sum(obs_mutability >= randomized_values)/length(randomized_values))
-        
-        
-      }
+          lineage <- c(lineage, rep(clone, sum(clone_dataframe$sequence_id == 'Node_0')))
+          metric_vector <- c(metric_vector, rep(metric, sum(clone_dataframe$sequence_id == 'Node_0')))
+          region_vector <- c(region_vector, rep(region, sum(clone_dataframe$sequence_id == 'Node_0')))
+  
+          mutability <- c(mutability,
+                          clone_dataframe[clone_dataframe$sequence_id == 'Node_0',
+                                          paste('randomized_',metric,'_',region,'_allsites',sep='')]) 
+        }
+     }
   }
-}
-
-lineage <- factor(lineage, levels = c('CH103','CH103L','VRC26int','VRC26L','VRC01_13',
-                                      'VRC01_01','VRC01_19'))
-metric_vector <- factor(metric_vector, levels = c('S5F','HS','OHS','geomS5F'))
-region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))  
-
-global_observed_dataframe <- data.frame(lineage=lineage, metric=metric_vector, region=region_vector, 
-                                        mutability=mutability, percentile)
+  lineage <- factor(lineage, levels = c('CH103','CH103L','VRC26int','VRC26L','VRC01_13',
+                                             'VRC01_01','VRC01_19'))
+  metric_vector <- factor(metric_vector, levels = c('S5F','HS','OHS','geomS5F'))
+  region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))  
+    
+  global_randomized_dataframe <- data.frame(lineage=lineage, metric=metric_vector, region=region_vector, mutability=mutability)
+  
+  # ==== MAKE GLOBAL DATAFRAME WITH OBSERVED VALUE FOR EACH LINEAGE, REPLICATE, REGION AND METRIC (FOR VIOLIN PLOTS)
+  lineage <- c()
+  metric_vector <- c()
+  region_vector <- c()
+  mutability <- c()
+  percentile <- c()
+  
+  for(clone in c('CH103','CH103L','VRC26int','VRC26L','VRC01_01','VRC01_13','VRC01_19')){
+    clone_dataframe <- observed_dataframe_list[[clone]]
+      for(metric in c('S5F','HS','OHS','geomS5F')){
+        for(region in c('WS','FR','CDR')){
+          
+          lineage <- c(lineage, clone)
+          metric_vector <- c(metric_vector, metric)
+          region_vector <- c(region_vector, region)
+          
+          obs_mutability <-  clone_dataframe[clone_dataframe$sequence_id == 'Node_0',
+                                             paste('observed_',metric,'_',region,sep='')]
+          
+          mutability <- c(mutability, obs_mutability)
+          
+          randomized_values <- global_randomized_dataframe$mutability[global_randomized_dataframe$lineage == clone &
+                                                                      global_randomized_dataframe$metric == metric &
+                                                                      global_randomized_dataframe$region == region]
+          
+          percentile <- c(percentile, sum(obs_mutability >= randomized_values)/length(randomized_values))
+          
+          
+        }
+    }
+  }
+  
+  lineage <- factor(lineage, levels = c('CH103','CH103L','VRC26int','VRC26L','VRC01_13',
+                                        'VRC01_01','VRC01_19'))
+  metric_vector <- factor(metric_vector, levels = c('S5F','HS','OHS','geomS5F'))
+  region_vector <- factor(region_vector, levels = c('WS','FR','CDR'))  
+  
+  global_observed_dataframe <- data.frame(lineage=lineage, metric=metric_vector, region=region_vector, 
+                                          mutability=mutability, percentile)
 
 
 # Plot
@@ -181,8 +181,8 @@ global_observed_dataframe <- data.frame(lineage=lineage, metric=metric_vector, r
   ####
 
   # CDR FR difference in mean log S5F
-  mean_logS5F_CDR <- log(subset(global_observed_dataframe, metric == 'geomS5F' & region == 'CDR')$mutability)
-  mean_logS5F_FR <- log(subset(global_observed_dataframe, metric == 'geomS5F' & region == 'FR')$mutability)
+  geomS5F_CDR <- subset(global_observed_dataframe, metric == 'geomS5F' & region == 'CDR')$mutability
+  geomS5F_FR <- subset(global_observed_dataframe, metric == 'geomS5F' & region == 'FR')$mutability
   
   mean(mean_logS5F_CDR - mean_logS5F_FR)
   
@@ -195,5 +195,5 @@ global_observed_dataframe <- data.frame(lineage=lineage, metric=metric_vector, r
   #max(ratios)
   #min(ratios)
   
-  percentiles_CDR <- subset(global_observed_dataframe,  metric == 'S5F' & region == 'CDR')$percentile
-  percentiles_FR <- subset(global_observed_dataframe,  metric == 'S5F' & region == 'FR')$percentile
+  percentiles_CDR <- subset(global_observed_dataframe,  metric == 'geomS5F' & region == 'CDR')$percentile
+  percentiles_FR <- subset(global_observed_dataframe,  metric == 'geomS5F' & region == 'FR')$percentile

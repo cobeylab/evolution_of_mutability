@@ -37,39 +37,12 @@ distance_from_root <- c()
 for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19')){
   clone_dataframe_obs <- observed_dataframe_list[[clone]] 
   
-  logS5F_FR <- c(logS5F_FR,node_dataframe$logS5F_FR_parent[1])
+  logS5F_FR <- c(logS5F_FR,clone_dataframe_obs$observed_logS5F_FR)
+  logS5F_CDR <- c(logS5F_CDR,clone_dataframe_obs$observed_logS5F_CDR)
   
-  
-  for(internal_node in unique(clone_dataframe_obs$parent)){
-    node_dataframe <- clone_dataframe_obs[clone_dataframe_obs$parent == internal_node,]
-    
-    logS5F_FR <- c(logS5F_FR,node_dataframe$logS5F_FR_parent[1])
-    logS5F_CDR <- c(logS5F_CDR,node_dataframe$logS5F_CDR_parent[1])
-    
-    if(grepl('VRC01',clone)){
-      time_from_root <- c(time_from_root, 4*node_dataframe$parent_time_to_root[1])
-    }else{
-      time_from_root <- c(time_from_root, node_dataframe$parent_time_to_root[1])
-    }
-    
-    distance_from_root <- c(distance_from_root, node_dataframe$parent_distance_to_root[1])
-    lineage_vector <- c(lineage_vector, clone)
-  }
-  # Get points for terminal nodes:
-  for(terminal_node in unique(clone_dataframe_obs$child)){
-    node_dataframe <- clone_dataframe_obs[clone_dataframe_obs$child == terminal_node,]
-    
-    logS5F_FR <- c(logS5F_FR,node_dataframe$logS5F_FR_child)
-    logS5F_CDR <- c(logS5F_CDR,node_dataframe$logS5F_CDR_child)
-    
-    if(grepl('VRC01',clone)){
-      time_from_root <- c(time_from_root, 4*node_dataframe$parent_time_to_root[1])
-    }else{
-      time_from_root <- c(time_from_root, node_dataframe$parent_time_to_root[1])
-    }
-    distance_from_root <- c(distance_from_root, node_dataframe$parent_distance_to_root + node_dataframe$branch_exp_subs)
-    lineage_vector <- c(lineage_vector, clone)
-  }
+  time_from_root <- c(time_from_root, clone_dataframe_obs$time_from_root)
+  distance_from_root <- c(distance_from_root, clone_dataframe_obs$distance_to_root)
+  lineage_vector <- c(lineage_vector, nrow(clone_dataframe_obs))
 }
 
 lineage_vector <- factor(lineage_vector, levels = c('CH103','CH103L','VRC26','VRC26L','VRC01_13',

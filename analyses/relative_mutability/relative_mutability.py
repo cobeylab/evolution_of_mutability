@@ -211,13 +211,13 @@ def main(argv):
 
         # ====================================== WRITE OUTPUT FILES HEADERS ============================================
 
-        output_file_obs.write('sequence_id,time_from_root,distance_to_root')
+        output_file_obs.write('sequence_id,time_from_root,distance_to_root,')
 
         output_file_obs.write('observed_S5F_WS,observed_7M_WS,observed_HS_WS,observed_CS_WS,observed_OHS_WS,observed_logS5F_WS, observed_geomS5F_WS,')
         output_file_obs.write('observed_S5F_FR,observed_7M_FR,observed_HS_FR,observed_CS_FR,observed_OHS_FR,observed_logS5F_FR, observed_geomS5F_FR,')
         output_file_obs.write('observed_S5F_CDR,observed_7M_CDR,observed_HS_CDR,observed_CS_CDR,observed_OHS_CDR,observed_logS5F_CDR, observed_geomS5F_CDR\n')
         
-        output_file_random.write('sequence_id,time_from_root,distance_to_root')
+        output_file_random.write('sequence_id,time_from_root,distance_to_root,')
 
         output_file_random.write('randomized_S5F_WS_allsites,randomized_7M_WS_allsites,randomized_HS_WS_allsites,randomized_CS_WS_allsites,randomized_OHS_WS_allsites,randomized_logS5F_WS_allsites,randomized_geomS5F_WS_allsites,')
         output_file_random.write('randomized_S5F_FR_allsites,randomized_7M_FR_allsites,randomized_HS_FR_allsites,randomized_CS_FR_allsites,randomized_OHS_FR_allsites,randomized_logS5F_FR_allsites,randomized_geomS5F_FR_allsites,')

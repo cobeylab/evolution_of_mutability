@@ -37,7 +37,7 @@ base_plot <- function(results_dataframe, region, metric){
   
   ylabel <- switch(metric,
                    S5F = paste('Change in mean S5F mutability of ', region, 's', sep = ''),
-                   logS5F = paste('Change in mean log-S5F mutability of ', region, 's', sep = '')
+                   logS5F = paste('Change in mean log-S5F\nmutability (', region, 's)', sep = '')
                    )
   
   
@@ -67,7 +67,10 @@ base_plot <- function(results_dataframe, region, metric){
                       labels = c('Synonymous  ','Non-synonynous' )) +
     scale_colour_manual(name = '', values = c('gray80','gray40'),
                         labels = c('Synonymous  ','Non-synonynous' )) +
-    theme(axis.text.x = element_text(size = 9))
+    theme(axis.text.x = element_text(size = 12), axis.title.x = element_text(size = 18), axis.title.y = element_text(size = 14),
+          axis.text.y = element_text(size = 14),
+          plot.margin = unit(c(0.2,0.2,1,0.2), 'cm')
+          )
   
   return(pl)
   

@@ -238,7 +238,7 @@ total_change_dataframe <- data.frame(lineage=lineage_vector, region = region_vec
                                      substitution_class,cumulative_change, group)
 
 
-# COMPUTING AVERAGE FRACTION EXPLAINED BY NON-SYN.
+# COMPUTING AVERAGE FRACTION EXPLAINED BY NON-SYN in CDRs.
 syn <- c()
 nonsyn <- c()
 syn_fraction <- c()
@@ -246,10 +246,16 @@ nonsyn_fraction <- c()
 total <- c()
 
 for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_13','VRC01_01','VRC01_19')){
-  syn_change <- total_change_dataframe[total_change_dataframe$lineage == clone & substitution_class == 'syn_only',
+  syn_change <- total_change_dataframe[total_change_dataframe$lineage == clone & 
+                                       total_change_dataframe$substitution_class == 'syn_only' &
+                                       total_change_dataframe$region == 'CDR' &
+                                       total_change_dataframe$metric == 'logS5F',
                                        'cumulative_change']
   
-  nonsyn_change <- total_change_dataframe[total_change_dataframe$lineage == clone & substitution_class == 'nonsyn_only',
+  nonsyn_change <- total_change_dataframe[total_change_dataframe$lineage == clone & 
+                                            total_change_dataframe$substitution_class == 'nonsyn_only' &
+                                            total_change_dataframe$region == 'CDR' &
+                                            total_change_dataframe$metric == 'logS5F',
                                           'cumulative_change']
   
   syn <- c(syn, syn_change)
@@ -274,14 +280,14 @@ total_changes_plot <- function(metric){
                                               total_change_dataframe$metric == metric, ]
   
   ylabel <- switch(metric,
-                   S5F = 'Cumulative change in mean S5F mutability',
-                   logS5F = 'Cumulative change in mean log-S5F mutability')
+                   S5F = 'Cumulative change in mean\nS5F mutability',
+                   logS5F = 'Cumulative change in mean\nlog-S5F mutability')
   
   pl <- ggplot(subset_dataframe,aes(y=cumulative_change,x=region)) +
 
   geom_col(aes(fill = substitution_class), 
            width = 0.7, position=position_stack()) + 
-  
+  ggplot_theme +
   facet_grid(~lineage) +
   geom_hline(yintercept=0,linetype = 2) +
   theme_bw() +
@@ -289,7 +295,11 @@ total_changes_plot <- function(metric){
   ylab(ylabel) + 
   xlab('Region') +
   theme(legend.position = 'top',
-        legend.text=element_text(size=11)
+        legend.text=element_text(size=14),
+        axis.text.y = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        axis.title.x = element_text(size = 18),
+        axis.text.x = element_text(size = 12)
   ) +
   #scale_y_continuous(limits = c(-10,2)) + 
   scale_fill_manual(values = c('gray80','gray40'),
@@ -309,28 +319,22 @@ total_changes_plot <- function(metric){
 total_changes_plot_logS5F <- total_changes_plot('logS5F')
 
 # Importing plot with results for Liao ancestors
+
 source('Liao_ancestors_S_NS_changes.R')
-
-cumulative_changes_pl <- plot_grid(total_changes_plot_logS5F, Liao_CDR_logS5F_changes_pl,
-                                   nrow = 2)
-
-save_plot("cumulative_S_NS_mutability_changes.pdf", cumulative_changes_pl,
-          base_height = 10, base_width = 9
-)
-
 
 
 # =======================  BRANCH-LEVEL CHANGES IN MUTABILITY DUE - DATA VS. MODELS  =========================
 # Basic plotting function
-base_plot <- function(dataframe, substitution_class, region, simulation_type, ylims = c(-0.01,0.01)){
+base_plot <- function(dataframe, substitution_class, region, simulation_type, ylims = c(-0.01,0.01),
+                      legend = TRUE, x_axis = TRUE, bottom_margin = 1){
   
   dataframe <- dataframe[dataframe$substitution_class == substitution_class & dataframe$region == region &
                            dataframe$metric == 'logS5F',]
   
   ylabel_subst_class <- switch(substitution_class,
-                               syn_only = 'Synonymous change in mean log-S5F mutability',
-                               nonsyn_only = 'Non-synonymous change in mean log-S5F mutability',
-                               total = 'Total change in mean log S5F-mutability')
+                               syn_only = 'Syn. change in mean\nlog-S5F mutability',
+                               nonsyn_only = 'Non-syn. change in\nmean log-S5F mutability',
+                               total = 'Total change in mean log\nS5F-mutability')
   
   # Generate dataframe to pass to ggplot
   ggplot_dataframe <- data.frame(lineage = dataframe$lineage, mean_contrast_true = dataframe$mean_contrast_true,
@@ -347,11 +351,16 @@ base_plot <- function(dataframe, substitution_class, region, simulation_type, yl
   
   pl <- ggplot(ggplot_dataframe, aes(x = lineage, y = mean_contrast_true)) +
     geom_hline(yintercept=0,linetype = 2) +
-    theme_bw() +
-    ylab(paste(ylabel_subst_class, ' (', region,')', sep = '')) + 
+    ggplot_theme +
+    ylab(paste(ylabel_subst_class, ' (', region,'s)', sep = '')) + 
     xlab('Lineage') +
-    theme(legend.position = 'top',
-          legend.text=element_text(size=11)
+    theme(legend.position = ifelse(legend == TRUE, 'top','None'),
+          legend.text=element_text(size=14),
+          plot.margin = unit(c(0.2,1,bottom_margin,0.2),'cm'),
+          axis.title.x = element_text(size = 18),
+          axis.title.y = element_text(size = 14),
+          axis.text.y = element_text(size = 14),
+          axis.text.x = element_text(size = 12)
     ) +
     
     scale_y_continuous(limits = ylims) +
@@ -382,10 +391,10 @@ base_plot <- function(dataframe, substitution_class, region, simulation_type, yl
                size = 3, position = position_nudge(x=0.2,y=0)) +
     
     
-    scale_x_discrete(labels = c('CH103' = 'CH103 (H)', 'CH103L' = 'CH103 (L)',
-                                'VRC26' = 'VRC26 (H)', 'VRC26L' = 'VRC26 (L)',
-                                'VRC01_13' = 'VRC01-13 (H)','VRC01_01' = 'VRC01-01 (H)',
-                                'VRC01_19' = 'VRC01-19 (H)'
+    scale_x_discrete(labels = c('CH103' = 'CH103\n(H)', 'CH103L' = 'CH103\n(L)',
+                                'VRC26' = 'VRC26\n(H)', 'VRC26L' = 'VRC26\n(L)',
+                                'VRC01_13' = 'VRC01\n-13(H)','VRC01_01' = 'VRC01\n-01(H)',
+                                'VRC01_19' = 'VRC01\n-19(H)'
     )) + 
     
     # Dummy points (plotted outside of plotting region, only purpose is to quickly produce ggplot legend)
@@ -402,6 +411,10 @@ base_plot <- function(dataframe, substitution_class, region, simulation_type, yl
                       labels = c('observed','S5F\nmodel','Uniform\nmodel','Codon-position\nmodel')) +
     
     guides(fill=guide_legend(title=NULL))
+    
+    if(x_axis == FALSE){
+      pl <- pl + theme(axis.text.x = element_blank(), axis.title.x = element_blank())
+    }
   
     
   return(pl)
@@ -409,20 +422,32 @@ base_plot <- function(dataframe, substitution_class, region, simulation_type, yl
 
 # Changes compared to aa-unconstrained simulations
 pl_syn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'syn_only', region = 'FR',
-                                     simulation_type = 'unconstrained', ylims = c(-0.03,0.01))
+                                     simulation_type = 'unconstrained', ylims = c(-0.015,0.01), 
+                                     x_axis = FALSE, bottom_margin = 0.05)
 pl_nonsyn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'FR',
-                                        simulation_type = 'unconstrained', ylims = c(-0.03,0.01))
+                                        simulation_type = 'unconstrained', ylims = c(-0.03,0.01),
+                                        x_axis = FALSE, bottom_margin = 0.05)
 pl_syn_CDR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'syn_only', region = 'CDR',
-                                     simulation_type = 'unconstrained', ylims = c(-0.035,0.01))
+                                     simulation_type = 'unconstrained', ylims = c(-0.015,0.01), legend = FALSE)
 pl_nonsyn_CDR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'CDR',
-                                        simulation_type = 'unconstrained', ylims = c(-0.035,0.01))
+                                        simulation_type = 'unconstrained', ylims = c(-0.035,0.01), legend = FALSE)
 
-unconstrained_plot <- plot_grid(pl_syn_FR_unconstrained, pl_nonsyn_FR_unconstrained, 
-                                pl_syn_CDR_unconstrained, pl_nonsyn_CDR_unconstrained, 
-                                labels = c("FRs","","CDRs",""), 
-                                label_size = 15, nrow =2, hjust = 0)
 
-save_plot('S_NS_changes_randomizations.pdf',
-          unconstrained_plot,
-          base_height = 12, base_width = 14
+#COMBINING PLOTS
+
+# Plot for the main text:
+
+save_plot('S_NS_mutability_changes.pdf',
+  plot_grid(pl_syn_FR_unconstrained,total_changes_plot_logS5F,pl_syn_CDR_unconstrained, Liao_CDR_logS5F_changes_pl,
+          ncol = 2, rel_widths = c(0.55,1),
+          labels = c('a)','b)','','c)'), label_size = 24),
+          base_height = 10, base_width = 17
+)
+
+# Supplementary figure with non-synonymous changes in mutability (data vs. models)
+save_plot('NS_mutability_changes_supp.pdf',
+          plot_grid(pl_nonsyn_FR_unconstrained,pl_nonsyn_CDR_unconstrained,
+                    nrow = 2
+                    ),
+          base_height = 10, base_width = 6
 )
