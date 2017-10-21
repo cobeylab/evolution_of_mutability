@@ -23,7 +23,7 @@ VRC01_13_observed_dataframe <- read.table(paste(results_directory, 'VRC01_13_log
 VRC01_19_observed_dataframe <- read.table(paste(results_directory, 'VRC01_19_logistic/VRC01_19_log_run1a_observed_mutability_MCC.csv', sep = ''), header = T, sep = ',')
 
 observed_dataframe_list <- list('CH103' = CH103_observed_dataframe, 'CH103L' = CH103L_observed_dataframe,
-                                'VRC26int' = VRC26int_observed_dataframe, 'VRC26L' = VRC26L_observed_dataframe,
+                                'VRC26' = VRC26int_observed_dataframe, 'VRC26L' = VRC26L_observed_dataframe,
                                 'VRC01_01' = VRC01_01_observed_dataframe, 'VRC01_13' = VRC01_13_observed_dataframe,
                                 'VRC01_19' = VRC01_19_observed_dataframe)
 
@@ -42,7 +42,7 @@ for(clone in c('CH103','CH103L','VRC26','VRC26L','VRC01_01','VRC01_13','VRC01_19
   
   time_from_root <- c(time_from_root, clone_dataframe_obs$time_from_root)
   distance_from_root <- c(distance_from_root, clone_dataframe_obs$distance_to_root)
-  lineage_vector <- c(lineage_vector, nrow(clone_dataframe_obs))
+  lineage_vector <- c(lineage_vector, rep(clone, nrow(clone_dataframe_obs)))
 }
 
 lineage_vector <- factor(lineage_vector, levels = c('CH103','CH103L','VRC26','VRC26L','VRC01_13',
@@ -59,13 +59,13 @@ source('ggplot_parameters.R')
 # =====================================================================================================================
 
 # ======== PLOT OF CDR/FR S5F difference VS distance.
-pl_ratio_vs_distance <- ggplot(combined_dataframe, 
+pl_difference_vs_distance <- ggplot(combined_dataframe, 
                                aes(x = distance_from_root, y = CDR_FR_logS5F_difference)) +
   geom_hline(yintercept=0,linetype = 2) +
   theme_bw() +
   #theme_classic() + 
-  ylab('Relative difference between CDR and FR mutability') + 
-  xlab('Genetic distance from root') +
+  ylab('Difference in mean log-S5F mutability between CDRs and FRs') + 
+  xlab('Genetic distance from root\n(exp. number of substitutions per site)') +
   theme(axis.title.y = element_text(size = axis_title_size,
                                     margin = margin(0,ylab_distance,0,0)),
         axis.title.x = element_text(size = axis_title_size,
@@ -91,7 +91,7 @@ pl_ratio_vs_distance <- ggplot(combined_dataframe,
 #scale_color_brewer(palette = 'Set2')
 
 
-pdf('CDR_FR_S5F_relative_difference.pdf', height=12, width=6)
-plot(pl_ratio_vs_distance)
+pdf('CDR_FR_logS5F_relative_difference.pdf', height=12, width=6)
+plot(pl_difference_vs_distance)
 dev.off()
 

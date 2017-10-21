@@ -425,12 +425,12 @@ pl_syn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 's
                                      simulation_type = 'unconstrained', ylims = c(-0.015,0.01), 
                                      x_axis = FALSE, bottom_margin = 0.05)
 pl_nonsyn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'FR',
-                                        simulation_type = 'unconstrained', ylims = c(-0.03,0.01),
+                                        simulation_type = 'unconstrained', ylims = c(-0.04,0.01),
                                         x_axis = FALSE, bottom_margin = 0.05)
 pl_syn_CDR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'syn_only', region = 'CDR',
                                      simulation_type = 'unconstrained', ylims = c(-0.015,0.01), legend = FALSE)
 pl_nonsyn_CDR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'CDR',
-                                        simulation_type = 'unconstrained', ylims = c(-0.035,0.01), legend = FALSE)
+                                        simulation_type = 'unconstrained', ylims = c(-0.04,0.01), legend = FALSE)
 
 
 #COMBINING PLOTS

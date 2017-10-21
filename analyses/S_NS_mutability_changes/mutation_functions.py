@@ -612,7 +612,7 @@ def randomize_sequence_constrained(parent_sequence, descendant_sequence, mutabil
     return [randomized_sequence, n_nonsyn_randomizable, randomizable_nonsyn_sites]
 
 def randomize_sequence_unconstrained(parent_sequence, descendant_sequence, mutability_model, transition_model, partition_points):
-    '''Similar to randomize_sequence_constrained, but without constraining the amino acid sequence of the randomized descendant sequence to be the same as the observed descendant.
+    '''Similar to randomize_sequence_constrained, but without constraining the amino acid sequence of the randomized descendant sequence to be the same as the observed descendant, and without constraining codon changes to involve a single nucleotide change.
     The number of non-syn. and syn. substitutions is still constrained to be the same as the observed numbers
     '''
 
@@ -624,8 +624,8 @@ def randomize_sequence_unconstrained(parent_sequence, descendant_sequence, mutab
     seq_differences = sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
     # Observed numbers of syn. and non-syn. differences
-    n_syn_diffs = seq_differences['n_syn_diffs']
-    n_nonsyn_diffs = seq_differences['n_nonsyn_diffs']
+    obs_syn_diffs = seq_differences['n_syn_diffs']
+    obs_nonsyn_diffs = seq_differences['n_nonsyn_diffs']
 
     # List of nucleotide sites to avoid. Sites in previously hit codons cannot be hit again.
     fixed_sites = []
@@ -635,7 +635,7 @@ def randomize_sequence_unconstrained(parent_sequence, descendant_sequence, mutab
     nonsyn_changes = 0
 
     # While numbers of syn. and non-syn changes are less than observed numbers
-    while (syn_changes < n_syn_diffs) or (nonsyn_changes < n_nonsyn_diffs):
+    while (syn_changes < obs_syn_diffs) or (nonsyn_changes < obs_nonsyn_diffs):
 
         # List of sites that can be mutated
         possible_sites = [site for site in range(seq_length) if site not in fixed_sites]
@@ -674,32 +674,39 @@ def randomize_sequence_unconstrained(parent_sequence, descendant_sequence, mutab
         sim_codon = ''.join(sim_codon)
 
         # If simulated codon and ancestral code for the same amino acid...
-        if genetic_code[sim_codon] == genetic_code[ancestral_codon] and syn_changes < n_syn_diffs:
-            syn_changes += 1
+        if genetic_code[sim_codon] == genetic_code[ancestral_codon] and syn_changes < obs_syn_diffs:
+            #syn_changes += 1
 
             randomized_sequence = list(randomized_sequence)
             randomized_sequence[mutated_site] = new_nt
             randomized_sequence = ''.join(randomized_sequence)
 
             # Prevent all sites in the mutated codon to be mutated in the future
-            fixed_sites = fixed_sites + range(codon_position * 3, codon_position * 3 + 3)
+            #fixed_sites = fixed_sites + range(codon_position * 3, codon_position * 3 + 3)
 
         # else if simulated codon codes for an amino acid change
-        elif genetic_code[sim_codon] != genetic_code[ancestral_codon] and nonsyn_changes < n_nonsyn_diffs:
+        elif genetic_code[sim_codon] != genetic_code[ancestral_codon] and nonsyn_changes < obs_nonsyn_diffs:
             #if sim. codon is not a stop codon (if it is, skip the attempt and randomize again)
             if genetic_code[sim_codon] != '*':
-                nonsyn_changes += 1
+               # nonsyn_changes += 1
 
                 randomized_sequence = list(randomized_sequence)
                 randomized_sequence[mutated_site] = new_nt
                 randomized_sequence = ''.join(randomized_sequence)
 
                 # Prevent all sites in the mutated codon to be mutated in the future
-                fixed_sites = fixed_sites + range(codon_position * 3, codon_position * 3 + 3)
+                #fixed_sites = fixed_sites + range(codon_position * 3, codon_position * 3 + 3)
+
+        #Update realized number of syn and nonsyn changes:
+        randomized_vs_observed = sequence_differences(parent_sequence, randomized_sequence, partition_points)
+        syn_changes = randomized_vs_observed['n_syn_diffs']
+        nonsyn_changes = randomized_vs_observed['n_nonsyn_diffs']
+
+        #print str(syn_changes) + '/' + str(nonsyn_changes)
 
     # Check that randomized sequence has same # of syn. and non-syn. diffs from ancestral seq. as observed descendant
     randomized_seq_differences = sequence_differences(parent_sequence, randomized_sequence, partition_points)
-    assert randomized_seq_differences['n_syn_diffs'] == n_syn_diffs, 'Randomized descendant has a different number of syn. differences from ancestor relative to observed descendant'
-    assert randomized_seq_differences['n_nonsyn_diffs'] == n_nonsyn_diffs, 'Randomized descendant has a different number of nonsyn. differences from ancestor relative to observed descendant'
+    assert randomized_seq_differences['n_syn_diffs'] == obs_syn_diffs, 'Randomized descendant has a different number of syn. differences from ancestor relative to observed descendant'
+    assert randomized_seq_differences['n_nonsyn_diffs'] == obs_nonsyn_diffs, 'Randomized descendant has a different number of nonsyn. differences from ancestor relative to observed descendant'
 
     return randomized_sequence
