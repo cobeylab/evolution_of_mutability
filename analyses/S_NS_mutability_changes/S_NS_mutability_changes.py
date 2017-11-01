@@ -112,7 +112,10 @@ def main(argv):
     # ==================================== OPEN TREE FILE AND OUTPUT FILES =============================================
     with open(MCC_tree_file_path, 'r') as tree_file, open(output_file_path_observed, 'w') as output_file_obs, open(
             output_file_path_simulated_constrained, 'w') as output_file_sim_constrained, open(
-        output_file_path_simulated_unconstrained, 'w') as output_file_sim_unconstrained:
+        output_file_path_simulated_unconstrained, 'w') as output_file_sim_unconstrained, open(
+        output_file_path_aa_transitions_obs, 'w') as output_file_aa_transitions_obs, open(
+        output_file_path_aa_transitions_unconstrained,'w') as output_file_aa_transitions_unconstrained:
+
 
         # Header shared by observed and simulated output files:
         output_header_base = 'parent,child,parent_distance_to_root,parent_time_to_root,branch_time,branch_exp_subs,'
@@ -163,6 +166,14 @@ def main(argv):
 
         output_file_sim_constrained.write(output_header_sim)
         output_file_sim_unconstrained.write(output_header_sim)
+
+        # Headers for AA transition csv files
+        aatrans_header_obs = 'node,ancestor_aa,descendant_aa,n_trans,total_meanlogS5Fchange\n'
+        output_file_aa_transitions_obs.write(aatrans_header_obs)
+
+        aatrans_header_unconstrained = 'node,replicate,mutability_model,ancestor_aa,descendant_aa,n_trans,total_meanlogS5Fchange\n'
+        output_file_aa_transitions_unconstrained.write(aatrans_header_unconstrained)
+
 
         # ========================== DICTIONARY LINKING BEAST NUMBERING (FROM NEXUS) TO TAXON LABELS ===================
         number_to_id = {}
@@ -522,9 +533,11 @@ def main(argv):
                                 # Compute changes in S5F mutability between simulated sequences and parent sequence:
                                 diffs_from_parent = sequence_differences(parent_node_sequence, sim_seq, partition_points)
 
-                                # Record simulated AA trans. on this branch and their contribution to mean logS5F change
-                                AA_transitions_sim_unconstrained[node_number][mutability_model].append(diffs_from_parent['aa_transitions'])
-                                AA_meanLogS5F_changes_sim_unconstrained[node_number][mutability_model].append(diffs_from_parent['aa_trans_logmut_changes'])
+                                # For unconstrained simulations only:
+                                if simulation_type == 'unconstrained':
+                                    # Record simulated AA trans. on this branch and their contribution to mean logS5F change
+                                    AA_transitions_sim_unconstrained[node_number][mutability_model].append(diffs_from_parent['aa_transitions'])
+                                    AA_meanLogS5F_changes_sim_unconstrained[node_number][mutability_model].append(diffs_from_parent['aa_trans_logmut_changes'])
 
                                 # Store changes in dictionary
                                 for region in ['WS','FR','CDR']:
@@ -556,7 +569,6 @@ def main(argv):
                                         log_nonsyn_change)
                                     logS5F_changes[simulation_type][mutability_model][region]['total'].append(
                                         log_total_change)
-                                    
 
                     # ===================================== OUTPUT RESULTS =============================================
                     # Follow exact same order as variable names in output_header
@@ -666,6 +678,34 @@ def main(argv):
                             new_line_sim += '\n'
 
                             results_file.write(new_line_sim)
+
+                    # Results for amino acid transitions (observed)
+                    for ancestor_aa in AA_transitions_obs[node_number].keys():
+                        for descendant_aa in AA_transitions_obs[node_number][ancestor_aa].keys():
+                            new_line = [node_number, ancestor_aa, descendant_aa]
+                            new_line.append(AA_transitions_obs[node_number][ancestor_aa][descendant_aa])
+                            new_line.append(AA_meanLogS5F_changes_obs[node_number][ancestor_aa][descendant_aa])
+                            new_line.append('\n')
+                            new_line = [str(value) for value in new_line]
+                            new_line = ','.join(new_line)
+                            output_file_aa_transitions_obs.write(new_line)
+
+                    # Results for amino acid transitions (unconstrained simulations)
+                    for replicate in range(n_reps):
+                        for mutability_model in ['S5F','uniform','CP']:
+                            rep_transitions = AA_transitions_sim_unconstrained[node_number][mutability_model][replicate]
+                            rep_logmutchanges = AA_meanLogS5F_changes_sim_unconstrained[node_number][mutability_model][replicate]
+
+                            for ancestor_aa in rep_transitions.keys():
+                                for descendant_aa in rep_transitions[ancestor_aa].keys():
+
+                                    new_line = [node_number, replicate, mutability_model, ancestor_aa, descendant_aa]
+                                    new_line.append(rep_transitions[ancestor_aa][descendant_aa])
+                                    new_line.append(rep_logmutchanges[ancestor_aa][descendant_aa])
+                                    new_line.append('\n')
+                                    new_line = [str(value) for value in new_line]
+                                    new_line = ','.join(new_line)
+                                    output_file_aa_transitions_unconstrained.write(new_line)
 
 if(__name__ == "__main__"):
     status = main(sys.argv)
