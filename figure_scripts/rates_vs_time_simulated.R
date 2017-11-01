@@ -110,9 +110,6 @@ plot_list_total_rate_RC <- list()
 plot_list_S_rate <- list()
 plot_list_N_rate <- list()
 
-
-
-
 for(scenario in c('2c','2d','2e','3a','3b','3c','4a','4b','4c','4d','4e')){
     plot_list_total_rate_RC[[scenario]] <- list()
     plot_list_S_rate[[scenario]] <- list()
@@ -131,39 +128,46 @@ for(scenario in c('2c','2d','2e','3a','3b','3c','4a','4b','4c','4d','4e')){
     }
 }
 
-# Plot for uniform mutability simulations obtained under different r, K, s:
-uniform_mutability_plot_newpars <- plot_grid(plot_list_total_rate_RC[['4c']][['1']],plot_list_S_rate[['4c']][['1']], plot_list_N_rate[['4c']][['1']], 
-                                             plot_list_total_rate_RC[['4d']][['1']],plot_list_S_rate[['4d']][['1']], plot_list_N_rate[['4d']][['1']],
-                                             plot_list_total_rate_RC[['4e']][['1']],plot_list_S_rate[['4e']][['1']], plot_list_N_rate[['4e']][['1']],
-                                             labels = c('', '30% simulated decrease','','', '40% simulated decrease','','', '50% simulated decrease','')
-)
-save_plot("rates_vs_time_uniform_newpars.pdf", uniform_mutability_plot_newpars,
-          base_height = 10, base_width = 11
-)
-
-
-
 # Plot with results from uniform mutability simulations, w/ 30 (2c), 40 (2d) and 50% (2e) decrease in total rate
+for(replicate in c('1','2','3','4')){
 
+  uniform_mutability_plot <- plot_grid(plot_list_total_rate_RC[['2c']][[replicate]],plot_list_S_rate[['2c']][[replicate]], plot_list_N_rate[['2c']][[replicate]], 
+            plot_list_total_rate_RC[['2d']][[replicate]],plot_list_S_rate[['2d']][[replicate]], plot_list_N_rate[['2d']][[replicate]],
+            plot_list_total_rate_RC[['2e']][[replicate]],plot_list_S_rate[['2e']][[replicate]], plot_list_N_rate[['2e']][[replicate]],
+            labels = c('', '30% simulated decrease','','', '40% simulated decrease','','', '50% simulated decrease','')
+            )
+  
+  save_plot(paste("rates_vs_time_uniform_rep",replicate,".pdf", sep = ''), 
+            uniform_mutability_plot,
+            base_height = 10, base_width = 11
+  )
+  
+  
+}
 
-uniform_mutability_plot <- plot_grid(plot_list_total_rate_RC[['2c']][['1']],plot_list_S_rate[['2c']][['1']], plot_list_N_rate[['2c']][['1']], 
-          plot_list_total_rate_RC[['2d']],plot_list_S_rate[['2d']][['1']], plot_list_N_rate[['2d']][['1']],
-          plot_list_total_rate_RC[['2e']],plot_list_S_rate[['2e']][['1']], plot_list_N_rate[['2e']][['1']],
-          labels = c('', '30% simulated decrease','','', '40% simulated decrease','','', '50% simulated decrease','')
-          )
+# Plot for uniform mutability simulations obtained under different r, K, s:
+for(replicate in c('1','2','3','4')){
+  uniform_mutability_plot_newpars <- plot_grid(plot_list_total_rate_RC[['4c']][[replicate]],plot_list_S_rate[['4c']][[replicate]], plot_list_N_rate[['4c']][[replicate]], 
+                                               plot_list_total_rate_RC[['4d']][[replicate]],plot_list_S_rate[['4d']][[replicate]], plot_list_N_rate[['4d']][[replicate]],
+                                               plot_list_total_rate_RC[['4e']][[replicate]],plot_list_S_rate[['4e']][[replicate]], plot_list_N_rate[['4e']][[replicate]],
+                                               labels = c('', '30% simulated decrease','','', '40% simulated decrease','','', '50% simulated decrease','')
+  )
 
-save_plot("rates_vs_time_uniform.pdf", uniform_mutability_plot,
-          base_height = 10, base_width = 11
-)
+  save_plot(paste("rates_vs_time_uniform_newpars_rep",replicate,".pdf", sep = ''),
+            uniform_mutability_plot_newpars,
+            base_height = 10, base_width = 11
+  )
+}
 
-
-
-nonuniform_mutability_plot <- plot_grid(plot_list_total_rate_RC[['3a']][['1']],plot_list_S_rate[['3a']][['1']], plot_list_N_rate[['3a']][['1']], 
-                                     plot_list_total_rate_RC[['3b']][['1']],plot_list_S_rate[['3b']][['1']], plot_list_N_rate[['3b']][['1']],
-                                     plot_list_total_rate_RC[['3c']][['1']],plot_list_S_rate[['3c']][['1']], plot_list_N_rate[['3c']][['1']],
-                                     labels = c('', 'S5F-based model','','', 'Hotspot-based model (3x)','','', 'Hotspot-based model (30x)','')
-)
-
-save_plot("rates_vs_time_nonuniform.pdf", nonuniform_mutability_plot,
-          base_height = 10, base_width = 12
-)
+for(replicate in c('1','2','3','4')){
+  nonuniform_mutability_plot <- plot_grid(plot_list_total_rate_RC[['3a']][[replicate]],plot_list_S_rate[['3a']][[replicate]], plot_list_N_rate[['3a']][[replicate]], 
+                                       plot_list_total_rate_RC[['3b']][[replicate]],plot_list_S_rate[['3b']][[replicate]], plot_list_N_rate[['3b']][[replicate]],
+                                       plot_list_total_rate_RC[['3c']][[replicate]],plot_list_S_rate[['3c']][[replicate]], plot_list_N_rate[['3c']][[replicate]],
+                                       labels = c('', 'S5F-based model','','', 'Hotspot-based model (3x)','','', 'Hotspot-based model (30x)','')
+  )
+  
+  save_plot(paste("rates_vs_time_nonuniform_rep",replicate,".pdf", sep = '')
+            , nonuniform_mutability_plot,
+            base_height = 10, base_width = 12
+  )
+}

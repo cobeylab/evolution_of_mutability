@@ -80,6 +80,9 @@ def main(argv):
     output_file_path_simulated_constrained = output_directory + chain_id + '_simulated_MCC_constrained.csv'
     output_file_path_simulated_unconstrained = output_directory + chain_id + '_simulated_MCC_unconstrained.csv'
 
+    output_file_path_aa_transitions_obs = output_directory + chain_id + '_aa_transitions_obs.csv'
+    output_file_path_aa_transitions_unconstrained = output_directory + chain_id + '_aa_transitions_unconstrained.csv'
+
 
     # ========================== READ TIP SEQUENCES FROM XML FILE AND COMPUTE THEIR MUTABILITY==========================
     # ------------------------------- (Tip sequences are not annotated on the BEAST trees) -----------------------------
@@ -248,6 +251,14 @@ def main(argv):
             node0_CP1 = node0_CP1.split('+')[0]
 
         n_sites = 3 * len(node0_CP1)
+
+        # AA transition results for entire observed tree (dictionary with one AA transition dic. per node)
+        AA_transitions_obs = {}
+        AA_meanLogS5F_changes_obs = {}
+
+        # AA transition results for randomizations (Dictionary with a list of replicate AA trans. dicts. per model per node)
+        AA_transitions_sim_unconstrained = {}
+        AA_meanLogS5F_changes_sim_unconstrained = {}
 
         # ================================== DO THE ANALYSIS FOR EACH NODE =============================================
         for node in tree.nodes():
@@ -453,7 +464,15 @@ def main(argv):
                     # Branch length (exp subs per site)
                     branch_exp_subs = float(node.annotations.get_value('rate')) * float(branch_time)
 
+                    # Get branch amino acid transitions and their contributions to changes in mean log S5F mutability
+                    AA_transitions_obs[node_number] =  differences['aa_transitions']
+                    AA_meanLogS5F_changes_obs[node_number] = differences['aa_trans_logmut_changes']
+
+
                     # ============================== SIMULATE 100 descendant sequences per model =======================
+                    AA_transitions_sim_unconstrained[node_number] = {'S5F':[],'uniform':[], 'CP': []}
+                    AA_meanLogS5F_changes_sim_unconstrained[node_number] = {'S5F':[],'uniform':[], 'CP': []}
+
                     n_reps = 100
 
                     # Dictionary with S5F changes by simulation type (constrained / unconstrained) and mutability model
@@ -464,7 +483,6 @@ def main(argv):
                     logS5F_changes = {'constrained': {'S5F': {}, 'uniform': {}, 'CP': {}},
                                    'unconstrained': {'S5F': {}, 'uniform': {}, 'CP': {}}
                                    }
-                    
 
                     for key in S5F_changes.keys():
                         for subkey in S5F_changes[key].keys():
@@ -503,6 +521,10 @@ def main(argv):
 
                                 # Compute changes in S5F mutability between simulated sequences and parent sequence:
                                 diffs_from_parent = sequence_differences(parent_node_sequence, sim_seq, partition_points)
+
+                                # Record simulated AA trans. on this branch and their contribution to mean logS5F change
+                                AA_transitions_sim_unconstrained[node_number][mutability_model].append(diffs_from_parent['aa_transitions'])
+                                AA_meanLogS5F_changes_sim_unconstrained[node_number][mutability_model].append(diffs_from_parent['aa_trans_logmut_changes'])
 
                                 # Store changes in dictionary
                                 for region in ['WS','FR','CDR']:

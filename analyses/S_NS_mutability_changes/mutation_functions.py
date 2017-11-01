@@ -15,6 +15,10 @@ from copy import deepcopy
 import csv
 from itertools import permutations
 
+test_parent_sequence = 'TCGGAGACCCTGTCCCTCACCTGCACTGTCTCTGGTGGCTCCATCAGTAGTCACTACTGGAGTTGGATCCGGCAGCCCCCAGGAAAGGGACTGGAGTGGATTGGCTATATCTATTACACTGGGAGCACCAACTACAATCCCTCTTTCAAGAGTCGAGTCACCATATCAGTAGACACGTCCAAGAACCAGTTCTCCCTGAAACTGACCTCTGTGACCGCTGCGGACACGGCCGTGTATTACTGTGCGAGCCTGCCCAGGGGGCAGTTAGTCAATGCCTACTTTGACTACTGGGGCCAGGGAACCCTGGTCACCGTCTCCTCA'
+test_descendant_sequence = 'TCAGAGACCCTGTCCCTCACCTGCACTGTCTCTGGTGGCTCCATCAGTAGTGACTACTGGACTTGGATTCGGCAGGCCCCAGGAAAGGGACCGGAGTGGATTGGCTATATCTATTACACTGGGAGCACCAACTACAATCCCTCTTTCGCGAGTCGAATCACCATATCAGTAGACACGTCCAAGAAGCACTTCTCCCTGAAACTGACCTCTGTGACCGCTGCGGACACGGCCGTCTATTACTGTGCGAGTCTGCCCAGGGGGCAGTTAGTTAATGCCTACTTTGACTCCTGGGGCAAGGGAACCCTGGTCACCGTCGCCTCC'
+test_partition_points = [1, 34, 58, 109, 130, 244, 288]
+
 # Import conditional transition probabilities for each five-mer (Yaari et al.):
 S5F_transitions = {}
 with open('Yaari_transition_probabilities.csv', 'r') as csvfile:
@@ -78,14 +82,14 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
         Also returns sequences with only syn. and only non-syn. differences, and a list of what 5-nucleotide motifs mutated
     '''
 
-    assert(len(parent_sequence) == len(descendant_sequence))
+    assert (len(parent_sequence) == len(descendant_sequence))
     seq_length = len(parent_sequence)
 
     # Convert partition_points into Python indices (i.e. subtract 1):
     partition_points = [(partition_points[i] - 1) for i in range(len(partition_points))]
 
     # List of sites that belong to FRs (from partition_points)
-    FR_sites = [range(partition_points[i], partition_points[i + 1]) for i in [0,2,4]]
+    FR_sites = [range(partition_points[i], partition_points[i + 1]) for i in [0, 2, 4]]
     FR_sites = [j for i in FR_sites for j in i]
 
     # List of sites that belong to CDRs (from partition_points)
@@ -97,8 +101,7 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     diff_nts = [nt for nt in range(seq_length) if parent_sequence[nt] != descendant_sequence[nt]]
     diff_nts_FRs = [nt for nt in diff_nts if nt in FR_sites]
     diff_nts_CDRs = [nt for nt in diff_nts if nt in CDR_sites]
-    
-    
+
     n_nt_diffs = len(diff_nts)
     n_nt_diffs_FRs = len(diff_nts_FRs)
     n_nt_diffs_CDRs = len(diff_nts_CDRs)
@@ -106,33 +109,31 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     # Find number of AA differences in FRs and CDRs:
     n_aa_diffs_FRs = 0
     n_aa_diffs_CDRs = 0
-    
+
     for nt in diff_nts_FRs:
-        codon_site = nt/3
-        parent_codon = parent_sequence[codon_site*3 : codon_site*3 + 3]
-        descendant_codon = descendant_sequence[codon_site*3 : codon_site*3 + 3]
-        
-        if set(parent_codon) <= {'A', 'G', 'C', 'T'} and set(descendant_codon) <= {'A', 'G', 'C', 'T'}:       
+        codon_site = nt / 3
+        parent_codon = parent_sequence[codon_site * 3: codon_site * 3 + 3]
+        descendant_codon = descendant_sequence[codon_site * 3: codon_site * 3 + 3]
+
+        if set(parent_codon) <= {'A', 'G', 'C', 'T'} and set(descendant_codon) <= {'A', 'G', 'C', 'T'}:
             if genetic_code[parent_codon] != genetic_code[descendant_codon]:
                 n_aa_diffs_FRs += 1
 
     for nt in diff_nts_CDRs:
-        codon_site = nt/3
-        parent_codon = parent_sequence[codon_site*3 : codon_site*3 + 3]
-        descendant_codon = descendant_sequence[codon_site*3 : codon_site*3 + 3]
-        
-        if set(parent_codon) <= {'A', 'G', 'C', 'T'} and set(descendant_codon) <= {'A', 'G', 'C', 'T'}:       
+        codon_site = nt / 3
+        parent_codon = parent_sequence[codon_site * 3: codon_site * 3 + 3]
+        descendant_codon = descendant_sequence[codon_site * 3: codon_site * 3 + 3]
+
+        if set(parent_codon) <= {'A', 'G', 'C', 'T'} and set(descendant_codon) <= {'A', 'G', 'C', 'T'}:
             if genetic_code[parent_codon] != genetic_code[descendant_codon]:
-                n_aa_diffs_CDRs += 1    
-                
-    # % Divergence in FRs and CDRs:
+                n_aa_diffs_CDRs += 1
+
+                # % Divergence in FRs and CDRs:
     nt_divergence_FRs = float(n_nt_diffs_FRs) / len(FR_sites)
     nt_divergence_CDRs = float(n_nt_diffs_CDRs) / len(CDR_sites)
-    
-    aa_divergence_FRs = float(n_aa_diffs_FRs) / (len(FR_sites)/3)
-    aa_divergence_CDRs = float(n_aa_diffs_CDRs) / (len(CDR_sites)/3)
 
-
+    aa_divergence_FRs = float(n_aa_diffs_FRs) / (len(FR_sites) / 3)
+    aa_divergence_CDRs = float(n_aa_diffs_CDRs) / (len(CDR_sites) / 3)
 
     # Total number (in codon sites) of synonymous and non-synonymous differences
     n_syn_diffs = 0
@@ -176,12 +177,21 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     # Number of motifs with more than one type of change (syn. and non-syn).
     motifs_with_syn_nonsyn = 0
 
+    # Dictionary with number of transitions between each pair of amino acids
+    aa_transitions = {}
+    # aa_transitions['A']['B'] will give number of transitions from A to B
+
+    # Dictionary of summed change in mutability associated with each amino acid transition
+    # Summed across multiple occurrences of the same transition
+    aa_trans_logmut_changes = {}
+
     # If at least one nucleotide changed, find all sites where syn. and non-syn. changes happened
     # Codon changes with >1 nt change are counted as only 1 syn. or non-syn. change.
     if n_nt_diffs > 0:
         diff_codon_sites = [i for i in range(seq_length / 3) if
                             descendant_sequence[i * 3: i * 3 + 3] != parent_sequence[i * 3: i * 3 + 3]]
-        diff_codons = [[descendant_sequence[site * 3: site * 3 + 3], parent_sequence[site * 3: site * 3 + 3]] for site in
+        diff_codons = [[descendant_sequence[site * 3: site * 3 + 3], parent_sequence[site * 3: site * 3 + 3]] for site
+                       in
                        diff_codon_sites]
 
         for i in range(len(diff_codon_sites)):
@@ -198,7 +208,6 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
                 if genetic_code[diff_codons[i][0]] == genetic_code[diff_codons[i][1]]:
                     n_syn_diffs += 1
-
 
                     nts_in_syn_changes += nt_sites_changed
 
@@ -221,10 +230,21 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
                         n_nonsyn_diffs_2nt += 1
                     if pos_changes == 3:
                         n_nonsyn_diffs_3nt += 1
-                    
+
                     n_nonsyn_diffs += 1
                     nts_in_nonsyn_changes += nt_sites_changed
                     nonsyn_diff_sites.append(site)
+
+                    descendant_aa = genetic_code[diff_codons[i][0]]
+                    ancestor_aa = genetic_code[diff_codons[i][1]]
+
+                    if ancestor_aa in aa_transitions.keys():
+                        if descendant_aa in aa_transitions[ancestor_aa].keys():
+                            aa_transitions[ancestor_aa][descendant_aa] += 1
+                        else:
+                            aa_transitions[ancestor_aa][descendant_aa] = 1
+                    else:
+                        aa_transitions[ancestor_aa] = {descendant_aa: 1}
 
     # For each five nucleotide motif position, compare parent and descendant
     for motif_pos in range(2, (seq_length - 2)):
@@ -241,7 +261,7 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
                 # Determine number of syn. and non-syn. substitutions associated with change in motif
                 # List of nucleotide sites spanning motif
-                nts_in_motif = range(motif_pos-2,motif_pos+3)
+                nts_in_motif = range(motif_pos - 2, motif_pos + 3)
 
                 # Number of nucleotides sites in motif that were involved in synonymous changes
                 n_syn_nts = len([nt for nt in nts_in_motif if nt in nts_in_syn_changes])
@@ -263,12 +283,16 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
                 if syn_contribution > 0 or nonsyn_contribution > 0:
 
                     # Change in S5F mutability attributable to syn changes:
-                    delta_mutability_syn = delta_mutability * float(syn_contribution) / (syn_contribution + nonsyn_contribution)
-                    delta_log_mutability_syn = delta_log_mutability * float(syn_contribution) / (syn_contribution + nonsyn_contribution)
+                    delta_mutability_syn = delta_mutability * float(syn_contribution) / (
+                    syn_contribution + nonsyn_contribution)
+                    delta_log_mutability_syn = delta_log_mutability * float(syn_contribution) / (
+                    syn_contribution + nonsyn_contribution)
 
                     # Change in S5F mutability attributable to nonsyn changes
-                    delta_mutability_nonsyn = delta_mutability * float(nonsyn_contribution) / (syn_contribution + nonsyn_contribution)
-                    delta_log_mutability_nonsyn = delta_log_mutability * float(nonsyn_contribution) / (syn_contribution + nonsyn_contribution)
+                    delta_mutability_nonsyn = delta_mutability * float(nonsyn_contribution) / (
+                    syn_contribution + nonsyn_contribution)
+                    delta_log_mutability_nonsyn = delta_log_mutability * float(nonsyn_contribution) / (
+                    syn_contribution + nonsyn_contribution)
 
                     # Add changes in mutability for this motif to sequence totals:
                     mutability_change_syn += delta_mutability_syn
@@ -293,18 +317,41 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
                         log_mutability_change_syn_CDR += delta_log_mutability_syn
                         log_mutability_change_nonsyn_CDR += delta_log_mutability_nonsyn
 
+                    # If there is a non-synonymous contribution, record change into dictionary of changes per aa trans.
+                    if nonsyn_contribution > 0:
+                        # Determine which codon site spanned by the motif underwent NS changes
+                        NS_diff_sites_in_motif = [nt / 3 for nt in nts_in_motif if nt in nts_in_nonsyn_changes]
 
-                    #print [float(syn_contribution) / (syn_contribution + nonsyn_contribution),
-                    # float(nonsyn_contribution) / (syn_contribution + nonsyn_contribution)]
+                        # Number of AA changes that contributed to changes in this motif:
+                        n_motif_aa_changes = len(NS_diff_sites_in_motif)
 
-                    #seq_mutability(descendant_sequence)[1]['mean_S5F'] - seq_mutability(parent_sequence)[1]['mean_S5F']
+                        # For each AA change that contributed to change in motif:
+                        for NS_diff_site in NS_diff_sites_in_motif:
+                            # Find which aa transition this is
+                            codon_pair = \
+                            [diff_codons[i] for i in range(len(diff_codons)) if diff_codon_sites[i] == NS_diff_site][0]
+
+                            # Divide nonsyn contribution equally among AA changes:
+                            aa_logmut_change = float(delta_log_mutability_nonsyn) / n_motif_aa_changes
+
+                            descendant_aa = genetic_code[codon_pair[0]]
+                            ancestor_aa = genetic_code[codon_pair[1]]
+
+                            # Add contribution of this AA trans to change in log mut. due to change in this motif
+                            if ancestor_aa in aa_trans_logmut_changes.keys():
+                                if descendant_aa in aa_trans_logmut_changes[ancestor_aa].keys():
+                                    aa_trans_logmut_changes[ancestor_aa][descendant_aa] += aa_logmut_change
+                                else:
+                                    aa_trans_logmut_changes[ancestor_aa][descendant_aa] = aa_logmut_change
+                            else:
+                                aa_trans_logmut_changes[ancestor_aa] = {descendant_aa: aa_logmut_change}
 
     # Record motifs where substitutions happened, separately for syn. and non-syn. changes:
     mutated_motifs = {}
 
     for nt in diff_nts:
         if 1 < nt < (seq_length - 2):
-            mut_motif = parent_sequence[nt-2:nt+3]
+            mut_motif = parent_sequence[nt - 2:nt + 3]
 
             # Ignore gapped or ambiguous motifs
             if set(mut_motif) <= {'A', 'G', 'C', 'T'}:
@@ -326,14 +373,13 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
                         else:
                             mutated_motifs[mut_motif][sub_type] = 1
                     else:
-                        mutated_motifs[mut_motif] = {sub_type:1}
+                        mutated_motifs[mut_motif] = {sub_type: 1}
 
     # Averaging mutability differences (divide by seq_length - 4)
     mutability_change_syn = mutability_change_syn / (seq_length - 4)
     mutability_change_nonsyn = mutability_change_nonsyn / (seq_length - 4)
     log_mutability_change_syn = log_mutability_change_syn / (seq_length - 4)
     log_mutability_change_nonsyn = log_mutability_change_nonsyn / (seq_length - 4)
-    
 
     mutability_change_syn_FR = mutability_change_syn_FR / (len(FR_sites) - 2)
     mutability_change_nonsyn_FR = mutability_change_nonsyn_FR / (len(FR_sites) - 2)
@@ -345,6 +391,10 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     log_mutability_change_syn_CDR = log_mutability_change_syn_CDR / (len(CDR_sites) - 2)
     log_mutability_change_nonsyn_CDR = log_mutability_change_nonsyn_CDR / (len(CDR_sites) - 2)
 
+    # Converting contributions of AA transitions from changes in sum log mutability to changes in average log mutability
+    for ancestor_aa in aa_trans_logmut_changes.keys():
+        for descendant_aa in aa_trans_logmut_changes[ancestor_aa]:
+            aa_trans_logmut_changes[ancestor_aa][descendant_aa] /= (seq_length - 4)
 
     output_dictionary = {}
     output_dictionary['n_nt_diffs'] = n_nt_diffs
@@ -376,15 +426,18 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
     output_dictionary['nt_divergence_CDRs'] = nt_divergence_CDRs
     output_dictionary['aa_divergence_FRs'] = aa_divergence_FRs
     output_dictionary['aa_divergence_CDRs'] = aa_divergence_CDRs
+    output_dictionary['aa_transitions'] = aa_transitions
+    output_dictionary['aa_trans_logmut_changes'] = aa_trans_logmut_changes
 
     # Generate sequence with only syn. differences:
     syn_only_descendant = deepcopy(parent_sequence)
-    syn_only_descendant = [syn_only_descendant[i:i+3] for i in range(0, len(syn_only_descendant), 3)]
+    syn_only_descendant = [syn_only_descendant[i:i + 3] for i in range(0, len(syn_only_descendant), 3)]
 
     for codon in output_dictionary['syn_diff_sites']:
-        syn_only_descendant[codon] = [descendant_sequence[i:i+3] for i in range(0, len(descendant_sequence), 3)][codon]
+        syn_only_descendant[codon] = [descendant_sequence[i:i + 3] for i in range(0, len(descendant_sequence), 3)][
+            codon]
     syn_only_descendant = ''.join(syn_only_descendant)
-    
+
     output_dictionary['syn_only_descendant'] = syn_only_descendant
 
     # Generate sequence with only non-syn. differences:
@@ -400,6 +453,17 @@ def sequence_differences(parent_sequence, descendant_sequence, partition_points)
 
     return output_dictionary
 
+# Test that NS mean log S5F changes partitioned by amino acid transition type add to total nonsyn change
+test_differences = sequence_differences(test_parent_sequence, test_descendant_sequence, test_partition_points)
+change_nonsyn = test_differences['log_mutability_change_nonsyn']
+aa_contribs = test_differences['aa_trans_logmut_changes']
+contribs_list = []
+
+for ancestor_aa in aa_contribs.keys():
+    for descendant_aa in aa_contribs[ancestor_aa]:
+        contribs_list.append(aa_contribs[ancestor_aa][descendant_aa])
+
+assert (change_nonsyn - sum(contribs_list)) < 1e-10
 
 # ================== SIMULATE DESCENDANT SEQUENCE KEEPING TRUE AA. DESCENDANT SEQ ====================
 

@@ -422,7 +422,7 @@ base_plot <- function(dataframe, substitution_class, region, simulation_type, yl
 
 # Changes compared to aa-unconstrained simulations
 pl_syn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'syn_only', region = 'FR',
-                                     simulation_type = 'unconstrained', ylims = c(-0.015,0.01), 
+                                     simulation_type = 'unconstrained', ylims = c(-0.015,0.015), 
                                      x_axis = FALSE, bottom_margin = 0.05)
 pl_nonsyn_FR_unconstrained <- base_plot(combined_dataframe, substitution_class = 'nonsyn_only', region = 'FR',
                                         simulation_type = 'unconstrained', ylims = c(-0.04,0.01),
