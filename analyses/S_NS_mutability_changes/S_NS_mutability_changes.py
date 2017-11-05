@@ -684,10 +684,17 @@ def main(argv):
                         for descendant_aa in AA_transitions_obs[node_number][ancestor_aa].keys():
                             new_line = [node_number, ancestor_aa, descendant_aa]
                             new_line.append(AA_transitions_obs[node_number][ancestor_aa][descendant_aa])
-                            new_line.append(AA_meanLogS5F_changes_obs[node_number][ancestor_aa][descendant_aa])
-                            new_line.append('\n')
+
+                            if ancestor_aa in AA_meanLogS5F_changes_obs[node_number].keys():
+                                if descendant_aa in AA_meanLogS5F_changes_obs[node_number][ancestor_aa].keys():
+                                    new_line.append(AA_meanLogS5F_changes_obs[node_number][ancestor_aa][descendant_aa])
+                                else:
+                                    new_line.append('NA')
+                            else:
+                                new_line.append('NA')
                             new_line = [str(value) for value in new_line]
                             new_line = ','.join(new_line)
+                            new_line += '\n'
                             output_file_aa_transitions_obs.write(new_line)
 
                     # Results for amino acid transitions (unconstrained simulations)
@@ -701,10 +708,18 @@ def main(argv):
 
                                     new_line = [node_number, replicate, mutability_model, ancestor_aa, descendant_aa]
                                     new_line.append(rep_transitions[ancestor_aa][descendant_aa])
-                                    new_line.append(rep_logmutchanges[ancestor_aa][descendant_aa])
-                                    new_line.append('\n')
+
+                                    if ancestor_aa in rep_logmutchanges.keys():
+                                        if descendant_aa in rep_logmutchanges[ancestor_aa].keys():
+                                            new_line.append(rep_logmutchanges[ancestor_aa][descendant_aa])
+                                        else:
+                                            new_line.append('NA')
+                                    else:
+                                        new_line.append('NA')
                                     new_line = [str(value) for value in new_line]
                                     new_line = ','.join(new_line)
+                                    new_line += '\n'
+
                                     output_file_aa_transitions_unconstrained.write(new_line)
 
 if(__name__ == "__main__"):
