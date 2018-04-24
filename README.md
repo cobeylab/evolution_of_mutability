@@ -1,5 +1,5 @@
 # Evolution of mutability
-This is the repository for *Selection and neutral mutations drive pervasive mutability losses in long-lived B cell lineages* (Vieira et al. in prep). This document outlines the overall pipeline of the project. Detailed instructions for reproducing each analysis can be found in the README files in the corresponding directories in the ```Analyses``` folder.
+This is the repository for [*Selection and neutral mutations drive pervasive mutability losses in long-lived anti-HIV B cell lineages*](https://academic.oup.com/mbe/article/35/5/1135/4904157) (Vieira et al. 2018). This document outlines the overall pipeline of the project. Detailed instructions for reproducing each analysis can be found in the README files in the corresponding directories in the ```Analyses``` folder.
 
 The project's analyses are divided into two main stages. The first stage is to align B cell receptor sequences and fit phylogenetic models to the resulting alignments using [BEAST (v.1.8.2)](http://http://beast.bio.ed.ac.uk/). Before they can be aligned, heavy chain sequences from the VRC01 dataset must be partitioned and assigned to different clones using [Partis](http://https://github.com/psathyrella/partis).
 
