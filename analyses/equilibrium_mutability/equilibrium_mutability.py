@@ -18,7 +18,7 @@ from classBCR import BCR
 S5F_transitions = {}
 with open('../simulated_alignments/modules/Yaari_transition_probabilities.csv', 'r') as csvfile:
     csvread = csv.reader(csvfile, delimiter=' ', quotechar='|')
-    csvread.next()
+    next(csvread)
     for row in csvread:
         csvrow = row
         motif = csvrow[0].replace('"', '')
@@ -70,70 +70,70 @@ def site_specific_rates(seq, mean_reference_mutability, reference_mutation_rate)
 
     return (rates)
 
-# Number of times a motif is concatenated to create each sequence
-n_repeats = 30
+# # Number of times a motif is concatenated to create each sequence
+# n_repeats = 30
 
-# Number of generations to simulate
-nsteps = 5000
+# # Number of generations to simulate
+# nsteps = 5000
 
-# Number of replicate trajectories starting from each sequence
-n_trajectories = 100
+# # Number of replicate trajectories starting from each sequence
+# n_trajectories = 100
 
-# Find motifs with the lowest mutability and the highest mutability
-lowest_mutability_index = np.array(S5F.values()).argsort()[0]
-lowest_mutability_motif = [motif for motif in S5F.keys() if S5F[motif] == S5F.values()[lowest_mutability_index]][0]
+# # Find motifs with the lowest mutability and the highest mutability
+# lowest_mutability_index = np.array(S5F.values()).argsort()[0]
+# lowest_mutability_motif = [motif for motif in S5F.keys() if S5F[motif] == S5F.values()[lowest_mutability_index]][0]
 
-highest_mutability_index = np.array(S5F.values()).argsort()[-1]
-highest_mutability_motif = [motif for motif in S5F.keys() if S5F[motif] == S5F.values()[highest_mutability_index]][0]
+# highest_mutability_index = np.array(S5F.values()).argsort()[-1]
+# highest_mutability_motif = [motif for motif in S5F.keys() if S5F[motif] == S5F.values()[highest_mutability_index]][0]
 
-# Initialize sequence consisting of concatenation of the lowest mutability motif:
-initial_seq_low = lowest_mutability_motif * n_repeats
+# # Initialize sequence consisting of concatenation of the lowest mutability motif:
+# initial_seq_low = lowest_mutability_motif * n_repeats
 
-# Initialize sequence consisting of concatenation of the highest mutability motif:
-initial_seq_high = highest_mutability_motif * n_repeats
+# # Initialize sequence consisting of concatenation of the highest mutability motif:
+# initial_seq_high = highest_mutability_motif * n_repeats
 
-# Reference mutation rate
-reference_mutation_rate = float(1) / (16 * len(initial_seq_low))
+# # Reference mutation rate
+# reference_mutation_rate = float(1) / (16 * len(initial_seq_low))
 
-# Reference mutability (i.e. mutability for which the mutation rate equals the reference mutation rate)
-# Chosen to be the the mutability of the low-mutability seq
-mean_reference_mutability = compute_mean_S5F(initial_seq_low)
+# # Reference mutability (i.e. mutability for which the mutation rate equals the reference mutation rate)
+# # Chosen to be the the mutability of the low-mutability seq
+# mean_reference_mutability = compute_mean_S5F(initial_seq_low)
 
-# compute_mean_S5F excludes the 2 nucleotides at each edge from the mean
-# adjusting value to take them into account with mutability 0 (in line with the site_specific_rates function)
-mean_reference_mutability = mean_reference_mutability * float(len(initial_seq_low) - 4) / len(initial_seq_low)
+# # compute_mean_S5F excludes the 2 nucleotides at each edge from the mean
+# # adjusting value to take them into account with mutability 0 (in line with the site_specific_rates function)
+# mean_reference_mutability = mean_reference_mutability * float(len(initial_seq_low) - 4) / len(initial_seq_low)
 
 
-with open('../../results/equilibrium_mutability/equilibrium_mutability.csv', 'w') as output_file:
-    output_file.write('generation,initial_mutability,replicate_trajectory,S5F_mutability\n')
+# with open('../../results/equilibrium_mutability/equilibrium_mutability.csv', 'w') as output_file:
+#     output_file.write('generation,initial_mutability,replicate_trajectory,S5F_mutability\n')
 
-    for trajectory in range(n_trajectories):
+#     for trajectory in range(n_trajectories):
 
-        # Initialize BCR objects
-        sequence_low = BCR(initial_seq_low)
-        sequence_high = BCR(initial_seq_high)
+#         # Initialize BCR objects
+#         sequence_low = BCR(initial_seq_low)
+#         sequence_high = BCR(initial_seq_high)
 
-        mutability_low = [compute_mean_S5F(initial_seq_low)]
-        mutability_high = [compute_mean_S5F(initial_seq_high)]
+#         mutability_low = [compute_mean_S5F(initial_seq_low)]
+#         mutability_high = [compute_mean_S5F(initial_seq_high)]
 
-        for i in range(nsteps):
-            # Simulate new sequence in the low mutability series
-            site_rates_low = site_specific_rates(sequence_low.sequence, mean_reference_mutability = mean_reference_mutability,
-                                                 reference_mutation_rate = reference_mutation_rate)
-            site_transitions_low = site_specific_transitions(sequence_low.sequence)
-            sequence_low = sequence_low.reproduce(site_mutation_probs = site_rates_low, site_transition_probs = site_transitions_low)
+#         for i in range(nsteps):
+#             # Simulate new sequence in the low mutability series
+#             site_rates_low = site_specific_rates(sequence_low.sequence, mean_reference_mutability = mean_reference_mutability,
+#                                                  reference_mutation_rate = reference_mutation_rate)
+#             site_transitions_low = site_specific_transitions(sequence_low.sequence)
+#             sequence_low = sequence_low.reproduce(site_mutation_probs = site_rates_low, site_transition_probs = site_transitions_low)
 
-            mutability_low.append(compute_mean_S5F(sequence_low.sequence))
+#             mutability_low.append(compute_mean_S5F(sequence_low.sequence))
 
-            # Simulate new sequence in the high mutability series
-            site_rates_high = site_specific_rates(sequence_high.sequence, mean_reference_mutability=mean_reference_mutability,
-                                                 reference_mutation_rate=reference_mutation_rate)
-            site_transitions_high = site_specific_transitions(sequence_high.sequence)
-            sequence_high = sequence_high.reproduce(site_mutation_probs=site_rates_high, site_transition_probs=site_transitions_high)
+#             # Simulate new sequence in the high mutability series
+#             site_rates_high = site_specific_rates(sequence_high.sequence, mean_reference_mutability=mean_reference_mutability,
+#                                                  reference_mutation_rate=reference_mutation_rate)
+#             site_transitions_high = site_specific_transitions(sequence_high.sequence)
+#             sequence_high = sequence_high.reproduce(site_mutation_probs=site_rates_high, site_transition_probs=site_transitions_high)
 
-            mutability_high.append(compute_mean_S5F(sequence_high.sequence))
+#             mutability_high.append(compute_mean_S5F(sequence_high.sequence))
 
-        for i in range(nsteps):
-            output_file.write(str(i) + ',low,' + str(trajectory) + ',' + str(mutability_low[i]) + '\n')
-        for i in range(nsteps):
-            output_file.write(str(i) + ',high,' + str(trajectory) + ',' + str(mutability_high[i]) + '\n')
+#         for i in range(nsteps):
+#             output_file.write(str(i) + ',low,' + str(trajectory) + ',' + str(mutability_low[i]) + '\n')
+#         for i in range(nsteps):
+#             output_file.write(str(i) + ',high,' + str(trajectory) + ',' + str(mutability_high[i]) + '\n')
